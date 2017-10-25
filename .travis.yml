@@ -1,0 +1,10 @@
+notifications:
+  email: false
+
+language: go
+go:
+  - 1.9
+
+
+install: echo "Install."
+script: echo "Build."

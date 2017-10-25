@@ -5,4 +5,6 @@ language: go
 go:
   - 1.9
 
-script: echo "Hello!"
+
+install: echo "Install."
+script: echo "Build."

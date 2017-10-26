@@ -1,0 +1,10 @@
+global:
+  tagline: English
+  about: About
+  github: GitHub
+  github_link: https://github.com/Monnoroch
+langs:
+  ru: Russian
+  en: English
+titles:
+  pagination: All posts

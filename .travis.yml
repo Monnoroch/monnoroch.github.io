@@ -1,10 +1,13 @@
 notifications:
   email: false
 
-language: go
-go:
-  - 1.9
-
-
-install: echo "Install."
-script: echo "Build."
+language: ruby
+rvm:
+  - 2.4.1
+script:
+  - bundle exec jekyll build
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "dev" ]; then ./deploy.sh; fi
+branches:
+  except:
+    - master

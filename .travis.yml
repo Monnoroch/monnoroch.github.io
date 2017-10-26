@@ -6,6 +6,12 @@ rvm:
   - 2.4.1
 script:
   - bundle exec jekyll build
+  - rm -rf -- !(_site)
+  - mv _site/* ./
+  - rm -rf _site
+  - git add .
+  - git remote add deploy https://$GITHUB_TOKEN:x-oauth-basic@github.com/$GITHUB_USER/$GITHUB_USER.github.io.git
+  - git commit -m 'Deploy'
 after_success:
   - if [ "$TRAVIS_BRANCH" == "dev" ]; then ./deploy.sh; fi
 branches:

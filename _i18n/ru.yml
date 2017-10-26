@@ -1,0 +1,10 @@
+global:
+  tagline: Русский
+  about: О блоге
+  github: GitHub
+  github_link: https://github.com/Monnoroch
+langs:
+  ru: Русский
+  en: English
+titles:
+  pagination: Все посты

@@ -5,7 +5,7 @@ date: '2016-02-15 13:54:00 +0300'
 categories: ru posts
 ---
 
-<img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/intro_girl.png" width=520 alt="Пример работы системы"/>
+<center><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/intro_girl.png" width=520 alt="Пример работы системы"/></center>
 
 Вы тоже находите смайлы презабавнейшим феноменом?
 В доисторические времена, когда я еще был школьником и только начинал постигать прелести интернета, с первых же добавленных в ICQ контактов смайлы ежедневно меня веселили: ну действительно, представьте, что ваш собеседник корчит рожу, которую шлет вам смайлом!
@@ -106,7 +106,7 @@ def filter_frames(frames):
 
 И тут нам очень везет, ведь это довольно просто! По примеру первого эпического прорыва CNN -- AlexNet, архитектуру которого повторить довольно просто: бери себе конволюционно-пулинговых слоев, сколько можешь позволить, а сверху парочку полносвязных. Чем больше сеть, тем лучше, за исключением того, что она очень легко переобучается, но, слава Хинтону, с этим очень легко справиться с помощью техники под названием dropout и небольшого затухания весов на всякий случай.
 
-<img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/schema-alexnet.png" width=600 alt="AlexNet"/>
+<center><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/schema-alexnet.png" width=600 alt="AlexNet"/></center>
 
 Моя первая, еще маленькая, сеть:
 
@@ -132,7 +132,9 @@ def build_net12(input):
 
 Пошли. И сразу, волшебным образом, получилось!
 
-<img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_1_losses.png" width=340 height=264 alt="Ошибка"/><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_1_accuracy.png" width=340 height=264 alt="Точность"/><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_1_example.png" height=264 alt="Пример детекции"/>
+<center>
+<img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_1_losses.png" width=340 height=264 alt="Ошибка"/><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_1_accuracy.png" width=340 height=264 alt="Точность"/></center>
+<center><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_1_example.png" height=264 alt="Пример детекции"/></center>
 
 <i>Скриншоты сделаны в специально разработанной мной системе мониторинга обучения нейронных сетей под названием DeepEvent, о которой я напишу в отдельной статье, если будет интерес.</i>
 
@@ -191,7 +193,9 @@ def get_rnd_img_frame(img, box, net_input_size):
 
 Вот результаты той же маленькой модели, но с дополненными обучающим и тестовым множествами:
 
-<img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_2_losses.png" width=340 height=264 alt="Ошибка"/><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_2_accuracy.png" width=340 height=264 alt="Точность"/><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_2_example.png" height=264 alt="Пример детекции"/>
+<center>
+<img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_2_losses.png" width=340 height=264 alt="Ошибка"/><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_2_accuracy.png" width=340 height=264 alt="Точность"/></center>
+<center><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_2_example.png" height=264 alt="Пример детекции"/></center>
 
 На примере работы теперь есть еще синие квадраты, из за того, что я разделил фильтрацию на две стадии: сначала фильтруются только окна каждого размера в отдельности, выбирая лучшие среди своего размера (синие), и глобально среди всех размеров (зеленые), заодно, почему-то я уменьшил шаг скольжения окна.
 
@@ -213,7 +217,8 @@ def get_rnd_img_frame(img, box, net_input_size):
 
 Итак, теперь можно научить уже не игрушечную модель нормальных размеров и, успех!, при правильной настройке она не переобучается и не болтается вне минимумов.
 
-<img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_3_losses.png" width=340 height=264 alt="Ошибка"/><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_3_accuracy.png" width=340 height=264 alt="Точность"/><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_3_example.png" height=264 alt="Пример детекции"/>
+<center><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_3_losses.png" width=340 height=264 alt="Ошибка"/><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_3_accuracy.png" width=340 height=264 alt="Точность"/></center>
+<center><img src="/images/posts/2017-02-15-deep-learning-in-the-garage-brotherhood-of-data/train_3_example.png" height=264 alt="Пример детекции"/></center>
 
 Здесь явно видно, как появляются стремные всплески в процессе обучения (почему -- будет дальше), но в итоге все становится более или менее хорошо, хотя все-таки слегка болтуче.
 

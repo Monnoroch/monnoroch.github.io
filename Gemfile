@@ -8,4 +8,5 @@ group :jekyll_plugins do
     gem 'jekyll-redirect-from'
     gem 'jekyll-paginate'
     gem 'jekyll-multiple-languages-plugin'
+    gem 'pygments.rb'
 end

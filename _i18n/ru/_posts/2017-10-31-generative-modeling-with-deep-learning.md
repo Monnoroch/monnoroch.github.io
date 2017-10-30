@@ -271,5 +271,4 @@ loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
 В следующей главе мы посмотрим, что такое генеративные модели и чем они принципиально отличаются от рассмотренных в этой главе дискриминативных. Мы посмотрим на простейшие примеры генеративных моделей и попробуем обучить модель, генерирующую сэмплы из простого распределения данных.
 
 ## Благодарности
-- Спасибо [Olga Talanova](https://www.linkedin.com/in/olga-talanova-b319b761/) за ревью текста.
-- Спасибо [Andrei Tarashkevich](https://github.com/andrewtar) за помощь с версткой этой статьи в Jekyll.
+Спасибо [Olga Talanova](https://www.linkedin.com/in/olga-talanova-b319b761/) за ревью текста. Спасибо [Andrei Tarashkevich](https://github.com/andrewtar) за помощь с версткой этой статьи в Jekyll.

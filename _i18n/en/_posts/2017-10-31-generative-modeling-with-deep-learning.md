@@ -7,4 +7,4 @@ categories: en posts
 
 To be translated.
 
-[This post in Russian](/ru/posts/2017/10/31/generative-modeling-with-deep-learning.html)
+[This post in Russian](/ru/posts/2017/10/30/generative-modeling-with-deep-learning.html)

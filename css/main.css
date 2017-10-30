@@ -172,7 +172,7 @@ a:hover {
   font-family: 'Source Sans Pro', Arial, sans-serif;
   font-size: 1.1em;
   margin-bottom: 1.45em;
-  text-align: justify;
+  text-align: left;
 }
 
 .post ul, .post ol {

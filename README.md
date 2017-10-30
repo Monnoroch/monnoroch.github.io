@@ -4,7 +4,7 @@
 
 My personal blog about Machine Learning and all things technology.
 
-# Acknolegements
+# Acknowledgements
 
 Many thanks to [Andrei Tarashkevich]() and [Ruslan Login](https://www.linkedin.com/in/ruslan-login-68bb2676/) for
 helping me with the web site.

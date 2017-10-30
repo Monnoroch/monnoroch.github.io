@@ -7,4 +7,4 @@ categories: en posts
 
 To be translated.
 
-[This post in Russian](/ru/posts/2016/02/16/2016-02-17-deep-learning-in-the-garage-return-of-smiles.html)
+[This post in Russian](/ru/posts/2016/02/17/deep-learning-in-the-garage-return-of-smiles.html)

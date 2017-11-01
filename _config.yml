@@ -6,17 +6,21 @@ exclude: ["LICENSE.txt", "README.md"]
 baseurl: ""
 
 # Paginate
-paginate: 1
+paginate: 5
 paginate_path: "/pagination/page:num/"
-
 
 # Plugins
 gems: 
   - jekyll-multiple-languages-plugin
   - jekyll-paginate
 
+# Assets
+sass:
+  sass_dir:     _sass
+  style:        :compressed
+
 
 # jekyll-multiple-languages-plugin settings:
 languages: ["en", "ru"]
 
-exclude_from_localizations: ["javascript", "images", "css", "scripts", "favicon.ico", "sitemap.xml", "robots.txt"]
+exclude_from_localizations: ["javascript", "images", "scripts", "favicon.ico", "sitemap.xml", "robots.txt"]

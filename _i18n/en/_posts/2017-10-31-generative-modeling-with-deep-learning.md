@@ -160,9 +160,6 @@ Regression problem is a problem of predicting the values of one random variable 
 
 ## Regression of linearly dependent variables with gaussian noise
 
-Давайте посмотрим, как решается задача регрессии на простом примере. Пусть есть две независимые случайные величины $\xi \sim Uniform(0, 10), \\varepsilon \sim N(0,1)$. Например, это высота дерева и нормальный случайный шум. Тогда мы можем предположить, что возраст дерева является случайной величиной $\eta=a \xi + b + \\varepsilon$. В таком случае по линейности математического ожидания и независимости $\xi$ и $\\varepsilon$:
-
-
 Let’s take a look at the regression problem and see how it works on a simple example. Assume two independent random variables $\xi \sim Uniform(0, 10), \\varepsilon \sim N(0,1)$. For example, the age of a tree and normal random noise. In this case we can assume that height of a tree is a random variable $\eta=a \xi + b + \\varepsilon$. In this case, given linearity of the expectation and independency between $\xi$ and $\\varepsilon$ we get:
 
 \\[

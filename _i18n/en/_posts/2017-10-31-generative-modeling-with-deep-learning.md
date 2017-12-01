@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Probabilistic interpritaton of classical Machine Learning models
+title: Probabilistic interpretaton of classical Machine Learning models
 date: '2017-10-31 00:20:00 +0300'
 categories: en posts
 ---

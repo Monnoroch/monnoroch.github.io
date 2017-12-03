@@ -13,7 +13,7 @@ script:
   - git remote add deploy https://$GITHUB_TOKEN:x-oauth-basic@github.com/$GITHUB_USER/$GITHUB_USER.github.io.git
   - git commit -m 'Deploy'
 after_success:
-  - if [ "$TRAVIS_BRANCH" == "dev" && "$TRAVIS_PULL_REQUEST_BRANCH" != "" ]; then echo "Deploying..." && ./deploy.sh; fi
+  - if [ "$TRAVIS_BRANCH" == "dev" ] && [ "$TRAVIS_PULL_REQUEST_BRANCH" == "" ]; then ./deploy.sh; fi
 branches:
   except:
     - master

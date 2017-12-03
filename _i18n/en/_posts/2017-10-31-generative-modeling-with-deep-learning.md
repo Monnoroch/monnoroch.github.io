@@ -266,4 +266,6 @@ In the next chapter, we will take a look at generative models and see the differ
 
 ## Acknowledgements
 
-Thanks [Olga Talanova](https://www.linkedin.com/in/olga-talanova-b319b761/) for reviewing this article and help translating it into English. Thanks [Sofya Vorotnikova](https://people.cs.umass.edu/~svorotni/) for comments, editing and proofreading the English version.
+Thanks [Olga Talanova](https://www.linkedin.com/in/olga-talanova-b319b761/) for reviewing this article and help translating it into English.
+Thanks [Sofya Vorotnikova](https://people.cs.umass.edu/~svorotni/) for comments, editing and proofreading the English version.
+Thanks [Andrei Tarashkevich](https://github.com/andrewtar) for helping convert this post into Jekyll.

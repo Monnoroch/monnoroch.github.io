@@ -5,7 +5,8 @@ date: '2017-10-31 00:20:00 +0300'
 categories: en posts
 ---
 
-With this article I am  starting a series covering generative models in machine learning. We will review classical machine learning (ML) problems, look at generative modelling, determine its differences from the classical ML problems, explore existing approaches, and dive into the details of the models based on deep neural networks.
+With this article I am starting a series covering generative models in machine learning. We will review classical machine learning (ML) problems, look at generative modelling, determine its differences from the classical ML problems, explore existing approaches, and dive into the details of the models based on deep neural networks.
+But before that we will look at probabilistic interpritations of classical Machine Learning problems as an introduction.
 
 ## Classical machine learning problems
 

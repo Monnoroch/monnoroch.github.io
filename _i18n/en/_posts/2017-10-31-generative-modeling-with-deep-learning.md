@@ -153,7 +153,7 @@ Observe, that the learned separating curve slowly converges to the analytical on
 
 ## Regression
 
-Regression problem is a problem of predicting the values of one random variable $\eta: \Omega \to Y$ using the values of another vector random variable $\xi\_i: \Omega \to X\_i$. For example, predicting the height of a person using his or her gender and age. Similarly to the classification problem, there is a labeled sample $D=\\{(x\_i,y\_1) \sim p(x, y), i=\\overline{1,N}\\}$. Precise prediction of the random variable is impossible, since it is random and is in fact a function so formally the problem is defined as predicting the conditional expectation:
+Regression problem is a problem of predicting the values of one random variable $\eta: \Omega \to Y$ using the values of another vector random variable $\xi\_i: \Omega \to X\_i$. For example, predicting the height of a person using his or her gender and age. Similarly to the classification problem, there is a labeled sample $D=\\{(x\_i,y\_i) \sim p(x, y), i=\\overline{1,N}\\}$. Precise prediction of the random variable is impossible, since it is random and is in fact a function so formally the problem is defined as predicting the conditional expectation:
 
 \\[
     f(x)=\\mathbb E(\eta|\xi=x)= \\int\\limits\_Y y\\ p(y|x)\\mathrm{d}y

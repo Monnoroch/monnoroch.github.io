@@ -4,7 +4,7 @@ title: Generative Modeling and AI
 date: '2018-02-05 12:20:00 +0300'
 categories: en posts
 ---
-In the (previous chapter](/en/posts/2017/10/31/generative-modeling-with-deep-learning.html) we discussed classical discriminative models in machine learning and went over simple examples of such models. This time we are going to look at the bigger picture.
+In the [previous chapter](/en/posts/2017/10/31/generative-modeling-with-deep-learning.html) we discussed classical discriminative models in machine learning and went over simple examples of such models. This time we are going to look at the bigger picture.
 
 <center> {% include image_with_caption.html url="/images/posts/2018-02-05-generative-modeling-and-ai/learning_process.gif" width=520 %} </center>
 
@@ -66,7 +66,7 @@ Where $q(z)$ is an arbitrary distribution. From here on conditioning on model pa
     =\int\_z q(z) \log P(x, z)+H\left(q\left(z\right)\right)+KL(q(z)||P(z|x))
 \\end{equation}
 
-Where $KL(q(z)||P(z|x))=\int_z q(z) \log \frac{q(z)}{P(z|x)}$ is called $KL$-divergence between distributions $q(z)$ and $P(z|x)$. $H\left(q\left(z\right)\right)=−\int_z q(z) \log q(z)$ is called entropy of $q(z)$. $H\left(q\left(z\right)\right)$ does not depend on model parameters $\theta$, so this term can be ignored during optimization:
+Where $KL(q(z)||P(z|x))=\int\_z q(z) \log \frac{q(z)}{P(z|x)}$ is called $KL$-divergence between distributions $q(z)$ and $P(z|x)$. $H\left(q\left(z\right)\right)=-\int\_z q(z) \log q(z)$ is called entropy of $q(z)$. $H\left(q\left(z\right)\right)$ does not depend on model parameters $\theta$, so this term can be ignored during optimization:
 
 \\begin{equation}
     L(x|\theta) \propto \int\_z q(z) \log P(x, z)+KL(q(z)||P(z|x))=
@@ -92,7 +92,7 @@ PPCA is a linear model, so it can be solved analytically. Instead of doing that 
     L(x|\theta) \propto  \int\_z q(z) \log P(x|z)=\int\_z q(z) \log \prod_{i=1}^{N} P(x\_i|z\_i)=\int\_z q(z) \sum\_{i=1}^{N} \log P(x\_i|z\_i)
 \\end{equation}
 
-Note that $\int_z q(z) f(z)$ is an expectation $E_{z \sim q(z)} f(z)$. Then
+Note that $\int\_zq(z)f(z)$ is an expectation $E\_{z \sim q(z)} f(z)$. Then
 
 \\begin{equation}
     \int\_z q(z) \sum\_{i=1}^{N} \log P(x\_i|z\_i)=E\_{z \sim q(z)} \sum\_{i=1}^{N} \log P(x\_i|z\_i) \propto E\_{z \sim q(z)} \frac{1}{N}\sum\_{i=1}^{N} \log P(x\_i|z\_i)
@@ -128,8 +128,8 @@ Where $d$ is the dimensionality of the observed variable $x$. Now let’s rewrit
 
 1. Initialize parameters $W, b, \sigma$ with sensible random initial values.
 2. Sample ${x_i} \sim P(x)$. This basically means choosing a minibatch from the dataset.
-3. Compute expected values of latent variables $z_i \sim P(z|x_i)$ or $ z_i = \left(W^T W + \sigma^2 I \right)^{−1} W^T\left(x_i − b\right) + \varepsilon, \varepsilon \sim N(0, \sigma^2 \left(W^T W + \sigma^2 I \right)^{−1})$.
-4. Substitute $x_i, z_i$  in formula (1) for $L^{*}(x|\theta)$ and do a single step of the gradient ascent on parameters $W, b, \sigma$. It is important to remember that $z_i$ is an input here and that the back propagation should not propagate inside them.
+3. Compute expected values of latent variables $z\_i \sim P(z|x\_i)$ или $z\_i = \left(W^T W + \sigma^2 I \right)^{-1} W^T\left(x\_i - b\right) + \varepsilon, \varepsilon \sim N(0, \sigma^2 \left(W^T W + \sigma^2 I \right)^{-1})$.
+4. Substitute $x\_i, z\_i$  in formula (1) for $L^{*}(x|\theta)$ and do a single step of the gradient ascent on parameters $W, b, \sigma$. It is important to remember that $z_i$ is an input here and that the back propagation should not propagate inside them.
 5. If both the data likelihood and expected values of latent variables do not change much, stop the training. Otherwise go to (2).
 
 After the model is trained, generated observations can be obtained as samples from
@@ -224,7 +224,7 @@ It can be seen that $b_i$ converge to analytical values $5$ and $10$ very quickl
 It can be seen that $\sigma$ has converged to $1.2$, i.e. to the smallest variance axes of the input distribution, as expected.
 
 <center> {% include image_with_caption.html url="/images/posts/2018-02-05-generative-modeling-and-ai/weight_0.png" width=1024 %} </center>
-<center> {% include image_with_caption.html url="/images/posts/2018-02-05-generative-modeling-and-ai/weight_1.png" description="Fig. 5. Learned parameters $W_{i0}$." width=1024 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-02-05-generative-modeling-and-ai/weight_1.png" description="Fig. 5. Learned parameters $W\_{i0}$." width=1024 %} </center>
 
 $W$, in turn, has approximately converged to a value for which $W W^T + \sigma^2 I=\\begin{pmatrix} 1.2^2 & 0 \\\\ 0 & 2.4^2 \\end{pmatrix}$. Substituting these values in the model we get $$P(x)=N(x; b, W W^T + \sigma^2 I)=N(x; \\begin{pmatrix} 5 \\\\ 10 \\end{pmatrix}, \\begin{pmatrix} 1.2^2 & 0 \\\\ 0 & 2.4^2 \\end{pmatrix})$$, which means that we have recovered the data distribution.
 

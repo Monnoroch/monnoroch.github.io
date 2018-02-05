@@ -251,6 +251,6 @@ It can be seen that all learned distributions have converged to distributions ve
 
 The described model is a probabilistic version of the classical PCA model, which is a linear model. We reused the math for the EM algorithm from the [original paper](http://www.robots.ox.ac.uk/~cvrg/hilary2006/ppca.pdf) and built a numerical GEM algorithm on top of it. We showed that the resulting model converges to an analytical solution on a toy problem. Naturally if true $P(x)$ would not be normal the model would not recover it perfectly the same way that PCA can only perfectly fit data that forms a hyperplane in the feature space. To solve more complicated data distribution approximation problems more complicated nonlinear models are needed. One of these models called Generative Adversarial Networks will be described in the next chapter.
 
-## Заключение
+## Acknowledgements
 
 Thanks [Olga Talanova](https://www.linkedin.com/in/olga-talanova-b319b761/) for reviewing the text. Thanks [Andrei Tarashkevich](https://github.com/andrewtar) for helping with converting the text to Jekyll.

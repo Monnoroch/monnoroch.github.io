@@ -4,7 +4,7 @@ title: Generative Modeling and AI
 date: '2018-02-05 12:20:00 +0300'
 categories: en posts
 ---
-In the [previous chapter](/en/posts/2017/10/30/generative-modeling-with-deep-learning.html) we discussed classical discriminative models in machine learning and went over simple examples of such models. This time we are going to look at the bigger picture.
+In the [previous chapter](/en/posts/2017/10/31/generative-modeling-with-deep-learning.html) we discussed classical discriminative models in machine learning and went over simple examples of such models. This time we are going to look at the bigger picture.
 
 <center> {% include image_with_caption.html url="/images/posts/2018-02-05-generative-modeling-and-ai/learning_process.gif" width=520 %} </center>
 

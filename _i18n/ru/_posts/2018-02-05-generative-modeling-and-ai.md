@@ -4,7 +4,7 @@ title: Генеративное Моделирование и AI
 date: '2018-02-05 12:20:00 +0300'
 categories: ru posts
 ---
-В [предыдущей главе](/ru/posts/2017/10/31/generative-modeling-with-deep-learning.html) мы поговорили о классических дискриминативных моделях в машинном обучении и разобрали простейшие примеры таких моделей. Давайте теперь посмотрим на более общую картину.
+В [предыдущей главе](/ru/posts/2017/10/30/generative-modeling-with-deep-learning.html) мы поговорили о классических дискриминативных моделях в машинном обучении и разобрали простейшие примеры таких моделей. Давайте теперь посмотрим на более общую картину.
 
 <center> {% include image_with_caption.html url="/images/posts/2018-02-05-generative-modeling-and-ai/learning_process.gif" width=520 %} </center>
 

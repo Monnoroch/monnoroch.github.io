@@ -319,7 +319,7 @@ public class NameRepositoryTest {
 
 1. Вызвать [Mockito.initMocks()](https://static.javadoc.io/org.mockito/mockito-core/2.2.28/org/mockito/MockitoAnnotations.html#initMocks(java.lang.Object)):
 
-```
+```java
 @Before
 public void setUp() {
   Mockito.initMocks(this);
@@ -328,13 +328,13 @@ public void setUp() {
 
 2. Использовать [MockitoJUnitRunner](https://static.javadoc.io/org.mockito/mockito-core/2.2.28/org/mockito/junit/MockitoJUnitRunner.html) для запуска тестов:
 
-```
+```java
 @RunWith(MockitoJUnitRunner.class)
 ```
 
 3. Добавить в тест правило [MockitoRule](https://static.javadoc.io/org.mockito/mockito-core/2.6.5/org/mockito/junit/MockitoRule.html):
 
-```
+```java
 @Rule public final MockitoRule rule = MockitoJUnit.rule();
 ```
 
@@ -363,7 +363,7 @@ public class NameRepositoryTest {
 
 ## Host Java VM vs Android Java VM
 
-Android тесты можно поделить на два типа: те, что можно запускать на обычной Java VM, и те, что необходимо запускать на Android Java VM. Давайте посмотрим на оба этих типа тестов.
+Android тесты можно поделить на два типа: те, что можно запускать на обычной Java VM, и те, что необходимо запускать на Android Java VM. Давайте посмотрим на оба типа тестов.
 
 ### Тесты, запускаемые на обычной Java VM
 
@@ -1165,7 +1165,7 @@ public class UserFragmentTest {
 
 ## Тесты запускаемые только для Debug приложения
 
-Бывает, что необходимо добавить логику или элементы UI, которые нужны разработчикам для более удобного тестирования и должны отображаться только если приложение собирается в режиме debug. Давайте для примера сделаем, что при debug сборке презентер будет не только передавать имя подписчику, но и выводить его в лог:
+Бывает, что необходимо добавить логику иди элементы UI, которые нужны разработчикам для более удобного тестирования и должны отображаться только если приложение собирается в режиме debug. Давайте для примера сделаем, чтобы в debug сборке презентер не только передавал имя подписчику, но и выводил его в лог:
 
 ```java
 class UserPresenter {
@@ -1229,7 +1229,7 @@ class UserPresenterDebugTest {
 
 ## Заключение
 
-В этой статье мы разобрались с базовыми библиотеками для написания тестов и разработали набор инструментов, основанных на [TestRule](https://developer.android.com/reference/android/support/test/rule/package-summary.html), предназначенных для решения проблем запуска активити и фрагментов, работой с асинхронным кодом, даггером, отладочным кодом и эмулятором андроида. Применение этих инструментов позволило протестировать неочевидные проблемы, снизить дублирование кода и в целом повысить читабельность тестов.
+В этой статье мы разобрались с базовыми библиотеками для написания тестов и разработали набор инструментов, основанных на [TestRule](https://developer.android.com/reference/android/support/test/rule/package-summary.html) и предназначенных для решения проблем запуска активити и фрагментов, работой с асинхронным кодом, даггером, отладочным кодом и эмулятором андроида. Применение этих инструментов позволило протестировать неочевидные проблемы, снизить дублирование кода и в целом повысить читабельность тестов.
 
 Полный пример приложения и тестов, использующих все вышеперечисленные библиотеки и утилиты.
 
@@ -1255,6 +1255,28 @@ public class NameRepository {
 }
 ```
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/main/java/com/example/user/NameRepository.java)</center>
+
+```java
+@RunWith(MockitoJUnitRunner.class)
+public class NameRepositoryTest {
+
+  @Mock FileReader fileReader;
+  NameRepository nameRepository;
+
+  @Before
+  public void setUp() throws IOException {
+    when(fileReader.readFile()).thenReturn("{name : Sasha}");
+    nameRepository = new NameRepository(fileReader);
+  }
+
+  @Test
+  public void getName() {
+    TestObserver<String> observer = nameRepository.getName().test();
+    observer.assertValue("Sasha");
+  }
+}
+```
+<center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/test/java/com/example/user/NameRepositoryTest.java)</center>
 
 ```java
 public class UserPresenter {
@@ -1297,66 +1319,6 @@ public class UserPresenter {
 }
 ```
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/main/java/com/example/user/UserPresenter.java)</center>
-
-```java
-public class UserFragment extends Fragment implements UserPresenter.Listener {
-
-  private TextView textView;
-  @Inject UserPresenter userPresenter;
-
-  @Override
-  public View onCreateView(
-      LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-    ((MainApplication) getActivity().getApplication())
-        .getComponent()
-        .createUserComponent(new UserModule(this))
-        .injectsUserFragment(this);
-    textView = new TextView(getActivity());
-    userPresenter.getUserName();
-    return textView;
-  }
-
-  @Override
-  public void onUserNameLoaded(String name) {
-    textView.setText(name);
-  }
-
-  @Override
-  public void onGettingUserNameError(String message) {
-    textView.setText(message);
-  }
-
-  @Override
-  public void onDestroyView() {
-    super.onDestroyView();
-    userPresenter.stopLoading();
-    textView = null;
-  }
-}
-```
-<center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/main/java/com/example/user/UserFragment.java)</center>
-
-```java
-@RunWith(MockitoJUnitRunner.class)
-public class NameRepositoryTest {
-
-  @Mock FileReader fileReader;
-  NameRepository nameRepository;
-
-  @Before
-  public void setUp() throws IOException {
-    when(fileReader.readFile()).thenReturn("{name : Sasha}");
-    nameRepository = new NameRepository(fileReader);
-  }
-
-  @Test
-  public void getName() {
-    TestObserver<String> observer = nameRepository.getName().test();
-    observer.assertValue("Sasha");
-  }
-}
-```
-<center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/test/java/com/example/user/NameRepositoryTest.java)</center>
 
 ```java
 @RunWith(RobolectricTestRunner.class)
@@ -1432,6 +1394,44 @@ public class UserPresenterDebugTest {
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/test/java/com/example/user/UserPresenterDebugTest.java)</center>
 
 ```java
+public class UserFragment extends Fragment implements UserPresenter.Listener {
+
+  private TextView textView;
+  @Inject UserPresenter userPresenter;
+
+  @Override
+  public View onCreateView(
+      LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    ((MainApplication) getActivity().getApplication())
+        .getComponent()
+        .createUserComponent(new UserModule(this))
+        .injectsUserFragment(this);
+    textView = new TextView(getActivity());
+    userPresenter.getUserName();
+    return textView;
+  }
+
+  @Override
+  public void onUserNameLoaded(String name) {
+    textView.setText(name);
+  }
+
+  @Override
+  public void onGettingUserNameError(String message) {
+    textView.setText(message);
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    userPresenter.stopLoading();
+    textView = null;
+  }
+}
+```
+<center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/main/java/com/example/user/UserFragment.java)</center>
+
+```java
 @RunWith(AndroidJUnit4.class)
 public class UserFragmentIntegrationTest {
 
@@ -1503,5 +1503,5 @@ public class UserFragmentTest {
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/androidTest/java/com/example/user/UserFragmentTest.java)</center>
 
 ## Благодарности
-Статья написана в коллаборации с [Evgeny Aseev](https://github.com/AseevEIDev). Он же написал значительную часть кода наших библиотек. Спасибо за ревью текста статьи и кода — [Andrei Tarashkevich](https://github.com/andrewtar), [Nikita Muratov](https://github.com/GeniyX). Спасибо спонсору проекта, компании [AURA Devices, LLC](https://auraband.io).
+Статья написана в коллаборации с [Evgeny Aseev](https://github.com/AseevEIDev). Он же написал значительную часть кода наших библиотек. Спасибо за ревью текста статьи и кода — [Andrei Tarashkevich](https://github.com/andrewtar), [Nikita Muratov](https://github.com/GeniyX). Спасибо спонсору проекта, компании AURA Devices, LLC.
 

@@ -183,6 +183,7 @@ public class NameRepositoryTest {
     String name = nameRepository.getName();
     Assert.assertEquals(name, "Sasha");
   }
+
   ...
 }
 
@@ -236,6 +237,7 @@ public class NameRepositoryTest {
     String name = nameRepository.getName();
     Assert.assertEquals(name, "Sasha");
   }
+
   ...
 }
 ```
@@ -565,7 +567,6 @@ public class ActivityTestRule<A extends AppCompatActivity> implements TestRule {
 
 ```java
 public class UserFragment extends Fragment {
-
   private TextView textView;
 
   @Override
@@ -632,7 +633,6 @@ class OpenFragmentRule<A extends AppCompatActivity> implements TestRule {
 ```java
 public class FragmentTestRule<A extends AppCompatActivity, F extends Fragment> 
     implements TestRule {
-
   private ActivityTestRule<A> activityRule;
   private F fragment;
   private RuleChain ruleChain;
@@ -763,12 +763,14 @@ public class UserFragmentTest {
   ...
 
   @Test
-  public void awaitTextViewHasText() {
+  public void nameDisplayed() {
     await()
         .atMost(5, SECONDS)
         .ignoreExceptions()
-        .untilAsserted(() -> onView(ViewMatchers.withText("Sasha"))
-            .check(matches(isDisplayed())));
+        .untilAsserted(
+            () -> 
+                onView(ViewMatchers.withText("Sasha"))
+                    .check(matches(isDisplayed())));
   }
 }
 
@@ -811,7 +813,6 @@ public class UserFragment extends Fragment {
 ```java
 public class FragmentAsyncTestRule<A extends AppCompatActivity> 
     implements TestRule {
-
   private final ActivityTestRule<A> activityRule;
   private final Fragment fragment;
 
@@ -861,18 +862,18 @@ public class UserFragmentTest {
 
 ```java
 public class UserPresenter {
- public interface Listener {
-   void onUserNameLoaded(String name);
-   void onGettingUserNameError(String message);
- }
+  public interface Listener {
+    void onUserNameLoaded(String name);
+    void onGettingUserNameError(String message);
+  }
 
- private final Listener listener;
- private final NameRepository nameRepository;
+  private final Listener listener;
+  private final NameRepository nameRepository;
 
- public UserPresenter(Listener listener, NameRepository nameRepository) {
-   this.listener = listener;
-   this.nameRepository = nameRepository;
- }
+  public UserPresenter(Listener listener, NameRepository nameRepository) {
+    this.listener = listener;
+    this.nameRepository = nameRepository;
+  } 
 
   public void getUserName() {
     nameRepository
@@ -920,19 +921,17 @@ public class UserPresenterTest {
 public class RxImmediateSchedulerRule implements TestRule {
 
   private static final TestScheduler TEST_SCHEDULER = new TestScheduler();
-  private static final Scheduler IMMEDIATE_SCHEDULER =
-      new Scheduler() {
-        @Override
-        public Disposable scheduleDirect(
-            Runnable run, long delay, TimeUnit unit) {
-          return super.scheduleDirect(run, 0, unit);
-        }
+  private static final Scheduler IMMEDIATE_SCHEDULER = new Scheduler() {
+    @Override
+    public Disposable scheduleDirect(Runnable run, long delay, TimeUnit unit) {
+      return super.scheduleDirect(run, 0, unit);
+    }
 
-        @Override
-        public Worker createWorker() {
-          return new ExecutorScheduler.ExecutorWorker(Runnable::run);
-        }
-      };
+    @Override
+    public Worker createWorker() {
+      return new ExecutorScheduler.ExecutorWorker(Runnable::run);
+    }
+  };
 
   @Override
   public Statement apply(Statement base, Description description) {
@@ -1022,19 +1021,19 @@ public interface ApplicationComponent {
 
 ```java
 public class MainApplication extends Application {
- private ApplicationComponent component;
+  private ApplicationComponent component;
 
- @Override
- public void onCreate() {
-   super.onCreate();
-   component = DaggerApplicationComponent.builder()
-     .contextModule(new ContextModule(this))
-     .build();
- }
+  @Override
+  public void onCreate() {
+    super.onCreate();
+    component = DaggerApplicationComponent.builder()
+      .contextModule(new ContextModule(this))
+      .build();
+  }
 
- public ApplicationComponent getComponent() {
-   return component;
- }
+  public ApplicationComponent getComponent() {
+    return component;
+  }
 }
 ```
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/MainApplication.java)</center>
@@ -1146,18 +1145,18 @@ class TestDaggerComponentRule<A extends AppCompatActivity> implements TestRule {
 ```java
 public class FragmentTestRule<A extends AppCompatActivity, F extends Fragment>
     implements TestRule {
-    private ActivityTestRule<A> activityRule;
-    private F fragment;
-    private RuleChain ruleChain;
+  private ActivityTestRule<A> activityRule;
+  private F fragment;
+  private RuleChain ruleChain;
 
-    public FragmentTestRule(
-          Class<A> activityClass, F fragment, ApplicationComponent component) {
-        this.fragment = fragment;
-        this.activityRule = new ActivityTestRule<>(activityClass);
-        ruleChain = RuleChain.outerRule(activityRule)
-                .around(new TestDaggerComponentRule<>(activityRule, component))
-                .around(new OpenFragmentRule<>(activityRule, fragment));
-    }
+  public FragmentTestRule(
+      Class<A> activityClass, F fragment, ApplicationComponent component) {
+    this.fragment = fragment;
+    this.activityRule = new ActivityTestRule<>(activityClass);
+    ruleChain = RuleChain.outerRule(activityRule)
+        .around(new TestDaggerComponentRule<>(activityRule, component))
+        .around(new OpenFragmentRule<>(activityRule, fragment));
+  }
 
     ...
 }
@@ -1254,7 +1253,7 @@ public class DebugRule implements TestRule {
 class UserPresenterDebugTest {
   ...
 
-@Rule public final DebugTestsRule debugRule = new DebugTestsRule();
+  @Rule public final DebugTestsRule debugRule = new DebugTestsRule();
 
   @Test
   public void userNameLogged() {
@@ -1484,18 +1483,19 @@ public class UserFragmentIntegrationTest {
       new FragmentAsyncTestRule<>(MainActivity.class, new UserFragment());
 
   @Rule
-  public final RuleChain rules =
-      RuleChain.outerRule(new CreateFileRule(getTestFile(), "{name : Sasha}"))
-          .around(
-              new FragmentTestRule<>(MainActivity.class, new UserFragment()));
+  public final RuleChain rules = RuleChain
+      .outerRule(new CreateFileRule(getTestFile(), "{name : Sasha}"))
+      .around(new FragmentTestRule<>(MainActivity.class, new UserFragment()));
 
   @Test
-  public void awaitTextViewHasName() {
+  public void nameDisplayed() {
     await()
         .atMost(5, SECONDS)
         .ignoreExceptions()
-        .untilAsserted(() -> onView(
-            ViewMatchers.withText("Sasha")).check(matches(isDisplayed())));
+        .untilAsserted(
+            () -> 
+                onView(ViewMatchers.withText("Sasha"))
+                    .check(matches(isDisplayed())));
   }
 
   private static File getTestFile() {
@@ -1526,7 +1526,7 @@ public class UserFragmentTest {
           createTestApplicationComponent());
 
   @Test
-  public void assertGetNameMethodWasCalled() {
+  public void getNameMethodCalledOnCreate() {
     verify(fragmentRule.getFragment().userPresenter).getUserName();
   }
 

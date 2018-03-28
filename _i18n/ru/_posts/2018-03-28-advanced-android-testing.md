@@ -53,8 +53,11 @@ public class NameRepositoryTest {
 
   @Test
   public void getName_isSasha() throws Exception {
-    PrintWriter writer = new PrintWriter(new BufferedWriter(
-      new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)), true);
+    PrintWriter writer =
+        new PrintWriter(
+            new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)),
+            true);
     writer.println("{name : Sasha}");
     writer.close();
 
@@ -66,8 +69,11 @@ public class NameRepositoryTest {
 
   @Test
   public void getName_notMia() throws Exception {
-    PrintWriter writer = new PrintWriter(new BufferedWriter(
-      new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)), true);
+    PrintWriter writer =
+        new PrintWriter(
+            new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)),
+            true);
     writer.println("{name : Sasha}");
     writer.close();
 
@@ -95,7 +101,11 @@ public class NameRepositoryTest {
 
   @Before
   public void setUp() throws Exception {
-    PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)), true);
+    PrintWriter writer =
+        new PrintWriter(
+            new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)),
+            true);
     writer.println("{name : Sasha}");
     writer.close();
   }
@@ -137,7 +147,12 @@ public class CreateFileRule implements TestRule {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), UTF_8)), true);
+        PrintWriter writer =
+            new PrintWriter(
+                new BufferedWriter(
+                    new OutputStreamWriter(
+                        new FileOutputStream(FILE), UTF_8)),
+                    true);
         writer.println(text);
         writer.close();
         try {
@@ -402,7 +417,8 @@ public class MainApplication extends Application {}
 public class MainApplicationTest {
   @Test
   public void packageName() {
-    assertThat(RuntimeEnvironment.application).isInstanceOf(MainApplication.class);
+    assertThat(RuntimeEnvironment.application)
+        .isInstanceOf(MainApplication.class);
   }
 }
 
@@ -495,7 +511,8 @@ class UnlockScreenRule<A extends AppCompatActivity> implements TestRule {
                             | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                             | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                             | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                            | WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON));
+                            | WindowManager.LayoutParams
+                                .FLAG_ALLOW_LOCK_WHILE_SCREEN_ON));
         statement.evaluate();
       }
     };
@@ -565,7 +582,10 @@ public class UserFragment extends Fragment {
   private NameRepository createNameRepository() {
     return new NameRepository(
         new FileReader(
-            new File(getContext().getFilesDir().getAbsoluteFile() + File.separator + "test_file")));
+            new File(
+                getContext().getFilesDir().getAbsoluteFile()
+                    + File.separator
+                    + "test_file")));
   }
 
   @Override
@@ -609,7 +629,9 @@ class OpenFragmentRule<A extends AppCompatActivity> implements TestRule {
 Аналогично правилу, которое запускает активити, логично создать правило, которое запускает фрагмент:
 
 ```java
-public class FragmentTestRule<A extends AppCompatActivity, F extends Fragment> implements TestRule {
+public class FragmentTestRule<A extends AppCompatActivity, F extends Fragment> 
+    implements TestRule {
+
   private ActivityTestRule<A> activityRule;
   private F fragment;
   private RuleChain ruleChain;
@@ -663,7 +685,9 @@ public class UserFragmentTest {
 
   private File getTestFile() {
     return new File(
-        InstrumentationRegistry.getTargetContext().getFilesDir().getAbsoluteFile()
+        InstrumentationRegistry.getTargetContext()
+                .getFilesDir()
+                .getAbsoluteFile()
             + File.separator
             + "test_file");
   }
@@ -685,7 +709,8 @@ public class NameRepository {
     return Single.create(
         emitter -> {
           Gson gson = new Gson();
-          emitter.onSuccess(gson.fromJson(fileReader.readFile(), User.class).getName());
+          emitter.onSuccess(
+              gson.fromJson(fileReader.readFile(), User.class).getName());
         });
   }
 }
@@ -783,7 +808,9 @@ public class UserFragment extends Fragment {
 Для тестирования подобных ошибок, связанных с асинхронными действиям во фрагменте, нужно закрыть фрагмент сразу же после его открытия. Это можно сделать просто заменив его на другой фрагмент. Тогда при завершении асинхронного действия `onCreateView` в закрытом фрагменте `textView` будет `null` и если допустить ошибку и не отменить подписку, приложение упадет. Напишем правило для тестирования на эту ошибку:
 
 ```java
-public class FragmentAsyncTestRule<A extends AppCompatActivity> implements TestRule {
+public class FragmentAsyncTestRule<A extends AppCompatActivity> 
+    implements TestRule {
+
   private final ActivityTestRule<A> activityRule;
   private final Fragment fragment;
 
@@ -890,43 +917,48 @@ public class UserPresenterTest {
 
 ```java
 public class RxImmediateSchedulerRule implements TestRule {
-    private static final TestScheduler TEST_SCHEDULER = new TestScheduler();
 
-    private Scheduler IMMEDIATE_SCHEDULER = new Scheduler() {
+  private static final TestScheduler TEST_SCHEDULER = new TestScheduler();
+
+  private Scheduler IMMEDIATE_SCHEDULER =
+      new Scheduler() {
         @Override
-        public Disposable scheduleDirect(Runnable run, long delay, TimeUnit unit) {
-            // Changing delay to 0 prevents StackOverflowErrors when scheduling with a delay.
-            return super.scheduleDirect(run, 0, unit);
+        public Disposable scheduleDirect(
+            Runnable run, long delay, TimeUnit unit) {
+          return super.scheduleDirect(run, 0, unit);
         }
 
         @Override
         public Worker createWorker() {
-            return new ExecutorScheduler.ExecutorWorker(Runnable::run);
+          return new ExecutorScheduler.ExecutorWorker(Runnable::run);
         }
+      };
+
+  @Override
+  public Statement apply(Statement base, Description description) {
+    return new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+        RxJavaPlugins.setIoSchedulerHandler(scheduler -> TEST_SCHEDULER);
+        RxJavaPlugins.setComputationSchedulerHandler(
+            scheduler -> TEST_SCHEDULER);
+        RxJavaPlugins.setNewThreadSchedulerHandler(
+            scheduler -> TEST_SCHEDULER);
+        RxAndroidPlugins.setMainThreadSchedulerHandler(
+            scheduler -> IMMEDIATE_SCHEDULER);
+        try {
+          base.evaluate();
+        } finally {
+          RxJavaPlugins.reset();
+          RxAndroidPlugins.reset();
+        }
+      }
     };
+  }
 
-    @Override
-    public Statement apply(Statement base, Description description) {
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                RxJavaPlugins.setIoSchedulerHandler(scheduler -> TEST_SCHEDULER);
-                RxJavaPlugins.setComputationSchedulerHandler(scheduler -> TEST_SCHEDULER);
-                RxJavaPlugins.setNewThreadSchedulerHandler(scheduler -> TEST_SCHEDULER);
-                RxAndroidPlugins.setMainThreadSchedulerHandler(scheduler -> IMMEDIATE_SCHEDULER);
-                try {
-                    base.evaluate();
-                } finally {
-                    RxJavaPlugins.reset();
-                    RxAndroidPlugins.reset();
-                }
-            }
-        };
-    }
-
-    public TestScheduler getTestScheduler() {
-        return TEST_SCHEDULER;
-    }
+  public TestScheduler getTestScheduler() {
+    return TEST_SCHEDULER;
+  }
 }
 ```
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/rules/RxImmediateSchedulerRule.java)</center>
@@ -940,7 +972,8 @@ public class UserPresenterTest {
   static final String NAME = "Sasha";
   
   @Rule public final MockitoRule rule = MockitoJUnit.rule();
-  @Rule public final RxImmediateSchedulerRule timeoutRule = new RxImmediateSchedulerRule();
+  @Rule public final RxImmediateSchedulerRule timeoutRule = 
+      new RxImmediateSchedulerRule();
 
   @Mock UserPresenter.Listener listener;
   @Mock NameRepository nameRepository;
@@ -1025,7 +1058,9 @@ public class UserModule {
   @Private
   @Provides
   File provideFile(Context context) {
-    return new File(context.getFilesDir().getAbsoluteFile() + File.separator + "test_file");
+    return new File(context.getFilesDir().getAbsoluteFile() 
+        + File.separator 
+        + "test_file");
   }
 
   @Qualifier
@@ -1078,7 +1113,8 @@ class TestDaggerComponentRule<A extends AppCompatActivity> implements TestRule {
  private final ActivityTestRule<A> activityRule;
  private final ApplicationComponent component;
 
- TestDaggerComponentRule(ActivityTestRule<A> activityRule, ApplicationComponent component) {
+ TestDaggerComponentRule(
+      ActivityTestRule<A> activityRule, ApplicationComponent component) {
    this.activityRule = activityRule;
    this.component = component;
  }
@@ -1114,7 +1150,8 @@ public class FragmentTestRule<A extends AppCompatActivity, F extends Fragment>
     private F fragment;
     private RuleChain ruleChain;
 
-    public FragmentTestRule(Class<A> activityClass, F fragment, ApplicationComponent component) {
+    public FragmentTestRule(
+          Class<A> activityClass, F fragment, ApplicationComponent component) {
         this.fragment = fragment;
         this.activityRule = new ActivityTestRule<>(activityClass);
         ruleChain = RuleChain.outerRule(activityRule)
@@ -1135,9 +1172,11 @@ public class UserFragmentTest {
   ...
 
   @Rule
-  public final FragmentTestRule<MainActivity, UserFragment> fragmentRule =
+  public final FragmentTestRule<MainActivity, UserFragment> fragmentRule = 
       new FragmentTestRule<>(
-          MainActivity.class, new UserFragment(), createTestApplicationComponent());
+          MainActivity.class, 
+          new UserFragment(), 
+          createTestApplicationComponent());
 
   private ApplicationComponent createTestApplicationComponent() {
     ApplicationComponent component = mock(ApplicationComponent.class);
@@ -1155,7 +1194,8 @@ public class UserFragmentTest {
     @Provides
     public NameRepository provideNameRepository() {
       NameRepository nameRepository = mock(NameRepository.class);
-      when(nameRepository.getName()).thenReturn(Single.fromCallable(() -> "Sasha"));
+      when(nameRepository.getName()).thenReturn(
+          Single.fromCallable(() -> "Sasha"));
       return nameRepository;
     }
   }
@@ -1245,7 +1285,8 @@ public class NameRepository {
     return Single.create(
         emitter -> {
           Gson gson = new Gson();
-          emitter.onSuccess(gson.fromJson(fileReader.readFile(), User.class).name);
+          emitter.onSuccess(
+              gson.fromJson(fileReader.readFile(), User.class).name);
         });
   }
 
@@ -1290,7 +1331,8 @@ public class UserPresenter {
   private final Logger logger;
   private Disposable disposable;
 
-  public UserPresenter(Listener listener, NameRepository nameRepository, Logger logger) {
+  public UserPresenter(
+      Listener listener, NameRepository nameRepository, Logger logger) {
     this.listener = listener;
     this.nameRepository = nameRepository;
     this.logger = logger;
@@ -1328,7 +1370,8 @@ public class UserPresenterTest {
   static final String NAME = "Sasha";
 
   @Rule public final MockitoRule rule = MockitoJUnit.rule();
-  @Rule public final RxImmediateSchedulerRule timeoutRule = new RxImmediateSchedulerRule();
+  @Rule public final RxImmediateSchedulerRule timeoutRule = 
+      new RxImmediateSchedulerRule();
 
   @Mock UserPresenter.Listener listener;
   @Mock NameRepository nameRepository;
@@ -1368,7 +1411,8 @@ public class UserPresenterDebugTest {
   private static final String NAME = "Sasha";
   @Rule public final DebugRule debugRule = new DebugRule();
   @Rule public final MockitoRule mockitoRule = MockitoJUnit.rule();
-  @Rule public final RxImmediateSchedulerRule timeoutRule = new RxImmediateSchedulerRule();
+  @Rule public final RxImmediateSchedulerRule timeoutRule = 
+      new RxImmediateSchedulerRule();
 
   @Mock UserPresenter.Listener listener;
   @Mock NameRepository nameRepository;
@@ -1442,19 +1486,23 @@ public class UserFragmentIntegrationTest {
   @Rule
   public final RuleChain rules =
       RuleChain.outerRule(new CreateFileRule(getTestFile(), "{name : Sasha}"))
-          .around(new FragmentTestRule<>(MainActivity.class, new UserFragment()));
+          .around(
+              new FragmentTestRule<>(MainActivity.class, new UserFragment()));
 
   @Test
   public void awaitTextViewHasName() {
     await()
         .atMost(5, SECONDS)
         .ignoreExceptions()
-        .untilAsserted(() -> onView(ViewMatchers.withText("Sasha")).check(matches(isDisplayed())));
+        .untilAsserted(() -> onView(
+            ViewMatchers.withText("Sasha")).check(matches(isDisplayed())));
   }
 
   private static File getTestFile() {
     return new File(
-        InstrumentationRegistry.getTargetContext().getFilesDir().getAbsoluteFile()
+        InstrumentationRegistry.getTargetContext()
+                .getFilesDir()
+                .getAbsoluteFile()
             + File.separator
             + "test_file");
   }
@@ -1473,7 +1521,9 @@ public class UserFragmentTest {
   @Rule
   public final FragmentTestRule<MainActivity, UserFragment> fragmentRule =
       new FragmentTestRule<>(
-          MainActivity.class, new UserFragment(), createTestApplicationComponent());
+          MainActivity.class, 
+          new UserFragment(), 
+          createTestApplicationComponent());
 
   @Test
   public void assertGetNameMethodWasCalled() {
@@ -1503,5 +1553,5 @@ public class UserFragmentTest {
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/androidTest/java/com/example/user/UserFragmentTest.java)</center>
 
 ## Благодарности
-Статья написана в коллаборации с [Evgeny Aseev](https://github.com/AseevEIDev). Он же написал значительную часть кода наших библиотек. Спасибо за ревью текста статьи и кода — [Andrei Tarashkevich](https://github.com/andrewtar), [Nikita Muratov](https://github.com/GeniyX). Спасибо спонсору проекта, компании AURA Devices, LLC.
+Статья написана в коллаборации с [Evgeny Aseev](https://github.com/AseevEIDev). Он же написал значительную часть кода наших библиотек. Спасибо за ревью текста статьи и кода — [Andrei Tarashkevich](https://github.com/andrewtar), [Nikita Muratov](https://github.com/GeniyX), [Ruslan Login](https://www.linkedin.com/in/ruslan-login-68bb2676/). Спасибо спонсору проекта, компании AURA Devices, LLC.
 

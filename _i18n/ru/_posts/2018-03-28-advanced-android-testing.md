@@ -53,11 +53,9 @@ public class NameRepositoryTest {
 
   @Test
   public void getName_isSasha() throws Exception {
-    PrintWriter writer =
-        new PrintWriter(
-            new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)),
-            true);
+    PrintWriter writer = new PrintWriter(
+        new BufferedWriter(
+            new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)), true);
     writer.println("{name : Sasha}");
     writer.close();
 
@@ -69,11 +67,9 @@ public class NameRepositoryTest {
 
   @Test
   public void getName_notMia() throws Exception {
-    PrintWriter writer =
-        new PrintWriter(
-            new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)),
-            true);
+    PrintWriter writer = new PrintWriter(
+        new BufferedWriter(
+            new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)), true);
     writer.println("{name : Sasha}");
     writer.close();
 
@@ -93,7 +89,7 @@ public class NameRepositoryTest {
 
 Чтобы не дублировать код подготовки в каждом тесте, существуют аннотации `@Before` и `@After`. Методы, помеченные аннотацией `@Before`, будут выполняться перед каждым тестом, а помеченные аннотацией `@After` — после каждого теста. Также есть аннотации `@BeforeClass` и `@AfterClass`, которые выполняются соответственно перед и после всех тестов в классе. Давайте переделаем наш тест, используя такие методы:
 
-```java 
+```java
 public class NameRepositoryTest {
   private static final File FILE = new File("test_file");
 
@@ -101,11 +97,9 @@ public class NameRepositoryTest {
 
   @Before
   public void setUp() throws Exception {
-    PrintWriter writer =
-        new PrintWriter(
-            new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)),
-            true);
+    PrintWriter writer = new PrintWriter(
+        new BufferedWriter(
+            new OutputStreamWriter(new FileOutputStream(FILE), UTF_8)), true);
     writer.println("{name : Sasha}");
     writer.close();
   }
@@ -151,8 +145,7 @@ public class CreateFileRule implements TestRule {
             new PrintWriter(
                 new BufferedWriter(
                     new OutputStreamWriter(
-                        new FileOutputStream(FILE), UTF_8)),
-                    true);
+                        new FileOutputStream(FILE), UTF_8)), true);
         writer.println(text);
         writer.close();
         try {
@@ -187,7 +180,7 @@ public class NameRepositoryTest {
   ...
 }
 
-```  
+```
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/filerule/NameRepositoryTest.java)</center>
 
 Если правило отметить аннотацией `@ClassRule`, то действия будут вызываться не перед каждым тестом, а один раз перед всеми тестами в классе, аналогично аннотациям `@BeforeClass` и `@AfterClass`.
@@ -245,7 +238,7 @@ public class NameRepositoryTest {
 
 Теперь в каждом тесте директория будет создаваться перед созданием файла и удаляться после удаления файла.
 
-[Google Truth](https://github.com/google/truth) — это библиотека для улучшения читабельности кода тестов. Содержит методы assert (аналогично [JUnit Assert](http://junit.sourceforge.net/javadoc/org/junit/Assert.html)), но более читабельные для человека, а также включает гораздо больше вариантов для проверки параметров. Так выглядит предыдущий тест с использование Truth: 
+[Google Truth](https://github.com/google/truth) — это библиотека для улучшения читабельности кода тестов. Содержит методы assert (аналогично [JUnit Assert](http://junit.sourceforge.net/javadoc/org/junit/Assert.html)), но более читабельные для человека, а также включает гораздо больше вариантов для проверки параметров. Так выглядит предыдущий тест с использование Truth:
 
 ```java
 @Test
@@ -264,7 +257,7 @@ public void getName_notMia() throws Exception {
 
 Видно, что код читается почти как текст на разговорном английском языке.
 
-Наш компонент делает две разных работы: читает файл и парсит его. Чтобы придерживаться принципа единственной ответственности, давайте выделим логику чтения файла в отдельный компонент: 
+Наш компонент делает две разных работы: читает файл и парсит его. Чтобы придерживаться принципа единственной ответственности, давайте выделим логику чтения файла в отдельный компонент:
 
 ```java
 public class FileReader {
@@ -388,7 +381,7 @@ Android тесты можно поделить на два типа: те, чт�
 
 Чтобы написать класс с Host Java тестами нужно, чтобы java файл имел путь `${moduleName}/src/test/java/...`. Также с помощью `@RunWith` аннотации указать `Runner`, который отвечает за запуск тестов, корректный вызов и обработку всех методов:
 
-```java 
+```java
 @RunWith(MockitoJUnitRunner.class)
 public class TestClass {...}
 ```
@@ -465,7 +458,7 @@ public class MainActivity extends AppCompatActivity {
 Протестируем наше приложение. При тестировании UI прежде всего нужно запустить Activity. Для этого существует [ActivityTestRule](https://developer.android.com/reference/android/support/test/rule/ActivityTestRule.html), которое запускает Activity перед каждым тестом и закрывает после:
 
 ```java
-@Rule public ActivityTestRule<MainActivity> activityTestRule = 
+@Rule public ActivityTestRule<MainActivity> activityTestRule =
     new ActivityTestRule<>(MainActivity.class);
 ```
 
@@ -504,18 +497,15 @@ class UnlockScreenRule<A extends AppCompatActivity> implements TestRule {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        activityRule.runOnUiThread(
-            () ->
-                activityRule
-                    .getActivity()
-                    .getWindow()
-                    .addFlags(
-                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                            | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                            | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                            | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                            | WindowManager.LayoutParams
-                                .FLAG_ALLOW_LOCK_WHILE_SCREEN_ON));
+        activityRule.runOnUiThread(() -> activityRule
+            .getActivity()
+            .getWindow()
+            .addFlags(
+                  WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                | WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON));
         statement.evaluate();
       }
     };
@@ -631,7 +621,7 @@ class OpenFragmentRule<A extends AppCompatActivity> implements TestRule {
 Аналогично правилу, которое запускает активити, логично создать правило, которое запускает фрагмент:
 
 ```java
-public class FragmentTestRule<A extends AppCompatActivity, F extends Fragment> 
+public class FragmentTestRule<A extends AppCompatActivity, F extends Fragment>
     implements TestRule {
   private ActivityTestRule<A> activityRule;
   private F fragment;
@@ -671,7 +661,7 @@ public class FragmentTestRule<A extends AppCompatActivity, F extends Fragment>
 
 Тест фрагмента с использованием этого правила будет выглядеть следующим образом:
 
-```java 
+```java
 @RunWith(AndroidJUnit4.class)
 public class UserFragmentTest {
   @Rule
@@ -687,10 +677,8 @@ public class UserFragmentTest {
   private File getTestFile() {
     return new File(
         InstrumentationRegistry.getTargetContext()
-                .getFilesDir()
-                .getAbsoluteFile()
-            + File.separator
-            + "test_file");
+            .getFilesDir()
+            .getAbsoluteFile() + File.separator + "test_file");
   }
 }
 ```
@@ -768,7 +756,7 @@ public class UserFragmentTest {
         .atMost(5, SECONDS)
         .ignoreExceptions()
         .untilAsserted(
-            () -> 
+            () ->
                 onView(ViewMatchers.withText("Sasha"))
                     .check(matches(isDisplayed())));
   }
@@ -811,7 +799,7 @@ public class UserFragment extends Fragment {
 Для тестирования подобных ошибок, связанных с асинхронными действиям во фрагменте, нужно закрыть фрагмент сразу же после его открытия. Это можно сделать просто заменив его на другой фрагмент. Тогда при завершении асинхронного действия `onCreateView` в закрытом фрагменте `textView` будет `null` и если допустить ошибку и не отменить подписку, приложение упадет. Напишем правило для тестирования на эту ошибку:
 
 ```java
-public class FragmentAsyncTestRule<A extends AppCompatActivity> 
+public class FragmentAsyncTestRule<A extends AppCompatActivity>
     implements TestRule {
   private final ActivityTestRule<A> activityRule;
   private final Fragment fragment;
@@ -873,23 +861,23 @@ public class UserPresenter {
   public UserPresenter(Listener listener, NameRepository nameRepository) {
     this.listener = listener;
     this.nameRepository = nameRepository;
-  } 
+  }
 
   public void getUserName() {
     nameRepository
-      .getName()
-      .timeout(2, SECONDS)
-      .subscribeOn(Schedulers.io())
-      .observeOn(AndroidSchedulers.mainThread())
-      .subscribe(
-        listener::onUserNameLoaded,
-        error -> listener.onGettingUserNameError(error.getMessage()));
+        .getName()
+        .timeout(2, SECONDS)
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(
+            listener::onUserNameLoaded,
+            error -> listener.onGettingUserNameError(error.getMessage()));
   }
 }
 ```
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/rx/timeout/UserPresenter.java)</center>
 
-В данном случае при тестировании презентера уже нужно протестировать конечный результат подписки, которая получает данные асинхронно. Напишем наивную версию такого теста: 
+В данном случае при тестировании презентера уже нужно протестировать конечный результат подписки, которая получает данные асинхронно. Напишем наивную версию такого теста:
 
 ```java
 @RunWith(RobolectricTestRunner.class)
@@ -969,9 +957,9 @@ public class RxImmediateSchedulerRule implements TestRule {
 public class UserPresenterTest {
   static final int TIMEOUT_SEC = 2;
   static final String NAME = "Sasha";
-  
+
   @Rule public final MockitoRule rule = MockitoJUnit.rule();
-  @Rule public final RxImmediateSchedulerRule timeoutRule = 
+  @Rule public final RxImmediateSchedulerRule timeoutRule =
       new RxImmediateSchedulerRule();
 
   @Mock UserPresenter.Listener listener;
@@ -1057,8 +1045,8 @@ public class UserModule {
   @Private
   @Provides
   File provideFile(Context context) {
-    return new File(context.getFilesDir().getAbsoluteFile() 
-        + File.separator 
+    return new File(context.getFilesDir().getAbsoluteFile()
+        + File.separator
         + "test_file");
   }
 
@@ -1126,12 +1114,11 @@ class TestDaggerComponentRule<A extends AppCompatActivity> implements TestRule {
         MainApplication application =
             ((MainApplication) activityRule.getActivity().getApplication());
         ApplicationComponent originalComponent = application.getComponent();
-
         application.setComponentForTest(component);
         try {
           statement.evaluate();
         } finally {
-        application.setComponentForTest(originalComponent);
+          application.setComponentForTest(originalComponent);
         }
       }
     };
@@ -1153,12 +1140,13 @@ public class FragmentTestRule<A extends AppCompatActivity, F extends Fragment>
       Class<A> activityClass, F fragment, ApplicationComponent component) {
     this.fragment = fragment;
     this.activityRule = new ActivityTestRule<>(activityClass);
-    ruleChain = RuleChain.outerRule(activityRule)
+    ruleChain = RuleChain
+        .outerRule(activityRule)
         .around(new TestDaggerComponentRule<>(activityRule, component))
         .around(new OpenFragmentRule<>(activityRule, fragment));
   }
 
-    ...
+  ...
 }
 ```
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/rules/FragmentTestRule.java)</center>
@@ -1171,10 +1159,10 @@ public class UserFragmentTest {
   ...
 
   @Rule
-  public final FragmentTestRule<MainActivity, UserFragment> fragmentRule = 
+  public final FragmentTestRule<MainActivity, UserFragment> fragmentRule =
       new FragmentTestRule<>(
-          MainActivity.class, 
-          new UserFragment(), 
+          MainActivity.class,
+          new UserFragment(),
           createTestApplicationComponent());
 
   private ApplicationComponent createTestApplicationComponent() {
@@ -1299,7 +1287,6 @@ public class NameRepository {
 ```java
 @RunWith(MockitoJUnitRunner.class)
 public class NameRepositoryTest {
-
   @Mock FileReader fileReader;
   NameRepository nameRepository;
 
@@ -1364,12 +1351,11 @@ public class UserPresenter {
 ```java
 @RunWith(RobolectricTestRunner.class)
 public class UserPresenterTest {
-
   static final int TIMEOUT_SEC = 2;
   static final String NAME = "Sasha";
 
   @Rule public final MockitoRule rule = MockitoJUnit.rule();
-  @Rule public final RxImmediateSchedulerRule timeoutRule = 
+  @Rule public final RxImmediateSchedulerRule timeoutRule =
       new RxImmediateSchedulerRule();
 
   @Mock UserPresenter.Listener listener;
@@ -1406,11 +1392,10 @@ public class UserPresenterTest {
 ```java
 @RunWith(RobolectricTestRunner.class)
 public class UserPresenterDebugTest {
-
   private static final String NAME = "Sasha";
   @Rule public final DebugRule debugRule = new DebugRule();
   @Rule public final MockitoRule mockitoRule = MockitoJUnit.rule();
-  @Rule public final RxImmediateSchedulerRule timeoutRule = 
+  @Rule public final RxImmediateSchedulerRule timeoutRule =
       new RxImmediateSchedulerRule();
 
   @Mock UserPresenter.Listener listener;
@@ -1438,7 +1423,6 @@ public class UserPresenterDebugTest {
 
 ```java
 public class UserFragment extends Fragment implements UserPresenter.Listener {
-
   private TextView textView;
   @Inject UserPresenter userPresenter;
 
@@ -1477,7 +1461,6 @@ public class UserFragment extends Fragment implements UserPresenter.Listener {
 ```java
 @RunWith(AndroidJUnit4.class)
 public class UserFragmentIntegrationTest {
-
   @ClassRule
   public static TestRule asyncRule =
       new FragmentAsyncTestRule<>(MainActivity.class, new UserFragment());
@@ -1493,7 +1476,7 @@ public class UserFragmentIntegrationTest {
         .atMost(5, SECONDS)
         .ignoreExceptions()
         .untilAsserted(
-            () -> 
+            () ->
                 onView(ViewMatchers.withText("Sasha"))
                     .check(matches(isDisplayed())));
   }
@@ -1501,10 +1484,8 @@ public class UserFragmentIntegrationTest {
   private static File getTestFile() {
     return new File(
         InstrumentationRegistry.getTargetContext()
-                .getFilesDir()
-                .getAbsoluteFile()
-            + File.separator
-            + "test_file");
+            .getFilesDir()
+            .getAbsoluteFile() + File.separator + "test_file");
   }
 }
 ```
@@ -1521,8 +1502,8 @@ public class UserFragmentTest {
   @Rule
   public final FragmentTestRule<MainActivity, UserFragment> fragmentRule =
       new FragmentTestRule<>(
-          MainActivity.class, 
-          new UserFragment(), 
+          MainActivity.class,
+          new UserFragment(),
           createTestApplicationComponent());
 
   @Test

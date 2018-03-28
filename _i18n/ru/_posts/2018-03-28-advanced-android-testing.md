@@ -195,26 +195,26 @@ public class NameRepositoryTest {
 
 ```java
 public class CreateDirRule implements TestRule {
- private final File dir;
+  private final File dir;
 
- public CreateDirRule(File dir) {
-   this.dir = dir;
- }
+  public CreateDirRule(File dir) {
+    this.dir = dir;
+  }
 
- @Override
- public Statement apply(final Statement s, Description d) {
-   return new Statement() {
-     @Override
-     public void evaluate() throws Throwable {
-       dir.mkdir();
-       try {
-         s.evaluate();
-       } finally {
-         dir.delete();
-       }
-     }
-   };
- }
+  @Override
+  public Statement apply(final Statement s, Description d) {
+    return new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+        dir.mkdir();
+        try {
+          s.evaluate();
+        } finally {
+          dir.delete();
+        }
+      }
+    };
+  }
 }
 ```
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/rules/CreateDirRule.java)</center>
@@ -463,7 +463,8 @@ public class MainActivity extends AppCompatActivity {
 Протестируем наше приложение. При тестировании UI прежде всего нужно запустить Activity. Для этого существует [ActivityTestRule](https://developer.android.com/reference/android/support/test/rule/ActivityTestRule.html), которое запускает Activity перед каждым тестом и закрывает после:
 
 ```java
-@Rule public ActivityTestRule<MainActivity> activityTestRule = new ActivityTestRule<>(MainActivity.class);
+@Rule public ActivityTestRule<MainActivity> activityTestRule = 
+    new ActivityTestRule<>(MainActivity.class);
 ```
 
 Напишем простой тест, проверяющий, что элемент с id `R.id.container` показан на экране:
@@ -1109,33 +1110,33 @@ public void setComponentForTest(ApplicationComponent component) {
 
 ```java
 class TestDaggerComponentRule<A extends AppCompatActivity> implements TestRule {
- private final ActivityTestRule<A> activityRule;
- private final ApplicationComponent component;
+  private final ActivityTestRule<A> activityRule;
+  private final ApplicationComponent component;
 
- TestDaggerComponentRule(
+  TestDaggerComponentRule(
       ActivityTestRule<A> activityRule, ApplicationComponent component) {
-   this.activityRule = activityRule;
-   this.component = component;
- }
+    this.activityRule = activityRule;
+    this.component = component;
+  }
 
- @Override
- public Statement apply(Statement statement, Description description) {
-   return new Statement() {
-     @Override
-     public void evaluate() throws Throwable {
-       MainApplication application =
-           ((MainApplication) activityRule.getActivity().getApplication());
-       ApplicationComponent originalComponent = application.getComponent();
+  @Override
+  public Statement apply(Statement statement, Description description) {
+    return new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+        MainApplication application =
+            ((MainApplication) activityRule.getActivity().getApplication());
+        ApplicationComponent originalComponent = application.getComponent();
 
-       application.setComponentForTest(component);
-       try {
-         statement.evaluate();
-       } finally {
-       application.setComponentForTest(originalComponent);
-       }
-     }
-   };
- }
+        application.setComponentForTest(component);
+        try {
+          statement.evaluate();
+        } finally {
+        application.setComponentForTest(originalComponent);
+        }
+      }
+    };
+  }
 }
 ```
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/rules/TestDaggerComponentRule.java)</center>
@@ -1552,5 +1553,5 @@ public class UserFragmentTest {
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/androidTest/java/com/example/user/UserFragmentTest.java)</center>
 
 ## Благодарности
-Статья написана в коллаборации с [Evgeny Aseev](https://github.com/AseevEIDev). Он же написал значительную часть кода наших библиотек. Спасибо за ревью текста статьи и кода — [Andrei Tarashkevich](https://github.com/andrewtar), [Nikita Muratov](https://github.com/GeniyX), [Ruslan Login](https://www.linkedin.com/in/ruslan-login-68bb2676/). Спасибо спонсору проекта, компании AURA Devices, LLC.
+Статья написана в коллаборации с [Evgeny Aseev](https://github.com/AseevEIDev). Он же написал значительную часть кода наших библиотек. Спасибо за ревью текста статьи и кода — [Andrei Tarashkevich](https://github.com/andrewtar), [Ruslan Login](https://www.linkedin.com/in/ruslan-login-68bb2676/). Спасибо спонсору проекта, компании AURA Devices, LLC.
 

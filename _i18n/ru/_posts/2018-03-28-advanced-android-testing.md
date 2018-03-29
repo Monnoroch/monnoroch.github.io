@@ -1534,5 +1534,4 @@ public class UserFragmentTest {
 <center>[Полный код](https://github.com/Monnoroch/android-testing/blob/master/example/src/androidTest/java/com/example/user/UserFragmentTest.java)</center>
 
 ## Благодарности
-Статья написана в коллаборации с [Evgeny Aseev](https://github.com/AseevEIDev). Он же написал значительную часть кода наших библиотек. Спасибо за ревью текста статьи и кода — [Andrei Tarashkevich](https://github.com/andrewtar), [Ruslan Login](https://www.linkedin.com/in/ruslan-login-68bb2676/). Спасибо спонсору проекта, компании AURA Devices, LLC.
-
+Статья написана в коллаборации с [Evgeny Aseev](https://github.com/AseevEIDev). Он же написал значительную часть кода наших библиотек. Спасибо за ревью текста статьи и кода — [Andrei Tarashkevich](https://github.com/andrewtar), [Ruslan Login](https://www.linkedin.com/in/ruslan-login-68bb2676/). Спасибо спонсору проекта, компании [AURA Devices](https://auraband.io).

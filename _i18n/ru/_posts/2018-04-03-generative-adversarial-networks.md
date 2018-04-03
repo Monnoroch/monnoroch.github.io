@@ -6,7 +6,7 @@ categories: ru posts
 ---
 В [прошлой статье](/ru/posts/2018/02/05/generative-modeling-and-ai.html) мы рассмотрели порстейшую линейную генеративную модель PPCA. Вторая генеративная модель, которую мы рассмотрим &mdash; Generative Adversarial Networks, сокращенно GAN. В этой статье мы рассмотрим самую базовую версию этой модели, оставив продвинутые версии и сравнение с другими подходами в генеративном моделировании на следующие главы.
 
-<center><img src="/images/posts/2018-04-03-generative-adversariala-networks/intro.gif" width="520"/></center>
+<center><img src="/images/posts/2018-04-03-generative-adversarial-networks/intro.gif" width="520"/></center>
 
 ## История
 
@@ -163,26 +163,26 @@ for step in range(args.max_steps):
 - трехслойная нейронная сеть с dropout-регуляризацией.
 - трехслойная нейронная сеть с L2- и dropout-регуляризацией.
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/p_real_on_real.png" description="Рис. 1. Вероятность классификации дискриминатором реального примера как реального." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_real.png" description="Рис. 1. Вероятность классификации дискриминатором реального примера как реального." width=520 %} </center>
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/p_real_on_fake.png" description="Рис. 2. Вероятность классификации дискриминатором сгенерированного примера как реального." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_fake.png" description="Рис. 2. Вероятность классификации дискриминатором сгенерированного примера как реального." width=520 %} </center>
 
 Все четыре модели достаточно быстро сходятся к тому, что дискриминатор выдает $1/2$ на всех входах. Из-за простоты задачи, которую решает генератор, между моделями почти нет разницы. Из графиков видно, что среднее и стандартное отклонение довольно быстро сходятся к значениям из распределения данных:
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/g_mean.png" description="Рис. 3. Среднее сгенерированных распределений." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/g_mean.png" description="Рис. 3. Среднее сгенерированных распределений." width=520 %} </center>
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/g_stddev.png" description="Рис. 4. Среднеквадратичное отклонение сгенерированных распределений." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/g_stddev.png" description="Рис. 4. Среднеквадратичное отклонение сгенерированных распределений." width=520 %} </center>
 
 Ниже приведены распределения настоящих и сгенерированных примеров в процессе обучения. Видно, что сгенерированные примеры к концу обучения практически не отличимы от настоящих (они отличимы на графиках потому, что Tensorboard выбрал разные масштабы, но, если посмотреть на значения, то они одинаковые).
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/real_data_base_train.png" description="Рис. 5. Распределение реальных данных. Не меняется во времени. Шаг обучения отложен на вертикальной оси." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/real_data_base_train.png" description="Рис. 5. Распределение реальных данных. Не меняется во времени. Шаг обучения отложен на вертикальной оси." width=520 %} </center>
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_base_train.png" description="" width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_base_train.png" description="" width=520 %} </center>
 
 <center>
-<img src="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_l2_reg_train_a.png" width="170"/>
-<img src="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_dropuot_l2_reg_train_a.png" width="170"/>
-<img src="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_dropuot_train_a.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_l2_reg_train_a.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropuot_l2_reg_train_a.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropuot_train_a.png" width="170"/>
 </center>
 <center>
 Рис. 6. Распределение реальных данных. Не меняется во времени. Шаг обучения отложен на вертикальной оси.
@@ -190,7 +190,7 @@ for step in range(args.max_steps):
 
 Давайте посмотрим на процесс обучения модели:
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/intro.gif" description="Рис. 7. Визуализация процесса обучения модели. Неподвижная гауссиана &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/intro.gif" description="Рис. 7. Визуализация процесса обучения модели. Неподвижная гауссиана &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим." width=520 %} </center>
 
 Видно, что дискриминатор в начале обучения очень хорошо разделяет данные, но распределение генерируемых примеров очень быстро буквально “подползает” к распределению настоящих примеров. В конце концов, генератор настолько хорошо приближает данные, что дискриминатор становится константой $1/2$ и задача сходится.
 
@@ -217,24 +217,24 @@ def data_batch(hparams):
 
 Ниже приведены графики для тех же самых моделей, что и в прошлом эксперименте, но для данных с двумя модами:
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/p_real_on_real_2_models.png" description="Рис. 8. Вероятность классификации дискриминатором реального примера как реального." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_real_2_models.png" description="Рис. 8. Вероятность классификации дискриминатором реального примера как реального." width=520 %} </center>
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/p_real_on_fake_2_models.png" description="Рис. 9. Вероятность классификации дискриминатором сгенерированного примера как реального." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_fake_2_models.png" description="Рис. 9. Вероятность классификации дискриминатором сгенерированного примера как реального." width=520 %} </center>
 
 Интересно заметить, что регуляризованные модели показывают себя существенно лучше нерегуляризованных. Однако, независимо от модели видно, что теперь генератору не удается так хорошо обмануть дискриминатор. Давайте поймем, почему так получилось.
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/g_mean_2.png" description="Рис. 10. Среднее сгенерированных распределений." width=520 %} </center>
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/g_stddev_2.png" description="Рис. 11. Среднеквадратичное отклонение сгенерированных распределений." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/g_mean_2.png" description="Рис. 10. Среднее сгенерированных распределений." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/g_stddev_2.png" description="Рис. 11. Среднеквадратичное отклонение сгенерированных распределений." width=520 %} </center>
 
 Как и в первом эксперименте, генератор приближает данные нормальным распределением. Причина снижения качества в том, что теперь данные нельзя точно приблизить нормальным распределением, ведь они сэмплируются из смеси двух нормальных. Моды смеси симметричны относительно нуля, и видно, что все четыре модели приближают данные нормальным распределением с центром рядом с нулем и достаточно большой дисперсией. Давайте посмотрим на распределения настоящих и поддельных примеров, чтобы понять, что происходит:
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/real_data_base_train_2.png" description="Рис 12. Распределение реальных данных. Не меняется во времени. Шаг обучения отложен на вертикальной оси." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/real_data_base_train_2.png" description="Рис 12. Распределение реальных данных. Не меняется во времени. Шаг обучения отложен на вертикальной оси." width=520 %} </center>
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_base_train_2.png" description="" width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_base_train_2.png" description="" width=520 %} </center>
 <center>
-<img src="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_l2_reg_train_2.png" width="170"/>
-<img src="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_dropout_l2_reg_train_2.png" width="170"/>
-<img src="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_dropout_train_2.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_l2_reg_train_2.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropout_l2_reg_train_2.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropout_train_2.png" width="170"/>
 </center>
 <center>
 Рис 13. Распределения сгенерированных данных от четырех моделей. Шаг обучения отложен на вертикальной оси.
@@ -242,13 +242,13 @@ def data_batch(hparams):
 
 Так проходит процесс обучения модели:
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/training.gif" description="Рис. 14. Визуализация процесса обучения модели. Неподвижная смесь гауссиан &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/training.gif" description="Рис. 14. Визуализация процесса обучения модели. Неподвижная смесь гауссиан &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим." width=520 %} </center>
 
 Эта анимация подробно показывает изученный выше случай. Генератор, не обладая достаточной экспрессивностью и имея возможность приближать данные только гауссианой, расплывается в широкую гауссиану, пытаясь охватить обе моды распределения данных. В результате генератор достоверно обманывает дискриминатор только в местах, где площади под кривыми генератора и исходных данных близки, то есть в районе пересечений этих кривых.
 
 Однако, это не единственный возможный случай. Давайте подвинем правую моду еще немного правее, чтобы начальное приближение генератора ее не захватывало.
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/training_2.gif" description="Рис. 15. Визуализация процесса обучения модели. Неподвижная смесь гауссиан &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим.
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/training_2.gif" description="Рис. 15. Визуализация процесса обучения модели. Неподвижная смесь гауссиан &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим.
 " width=520 %} </center>
 
 Видно, что в этом случае генератору выгоднее всего попытаться приблизить левую моду распределения. После того, как это происходит, генератор пытается предпринять попытки захватить и левую моду. Это выглядит, как осцилляции стандартного отклонения генератора во второй половине анимации. Но все эти попытки проваливаются, так как дискриминатор как-бы “запирает” генератор и для захвата левой моды ему необходимо преодолеть барьер из высокой функции потерь, чего он не может сделать из-за недостаточно большой скорости обучения. Данный эффект называется коллапсированием моды.
@@ -295,19 +295,19 @@ def generator(self, input, hparams):
 
 Давайте посмотрим на графики обучения.
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/p_real_on_real_2.png" description="Рис. 16. Вероятность классификации дискриминатором реального примера как реального." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_real_2.png" description="Рис. 16. Вероятность классификации дискриминатором реального примера как реального." width=520 %} </center>
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/p_real_on_fake_2.png" description="Рис. 17. Вероятность классификации дискриминатором сгенерированного примера как реального." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_fake_2.png" description="Рис. 17. Вероятность классификации дискриминатором сгенерированного примера как реального." width=520 %} </center>
 
 Видно, что из за большого количества параметров обучение стало гораздо более шумным. Дискриминаторы всех моделей сходятся к результату около $1/2$, но ведут себя нестабильно вокруг этой точки. Давайте посмотрим на форму генератора.
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/real_data_base_train_3.png" description="Рис 18. Распределение реальных данных. Не меняется во времени. Шаг обучения отложен на вертикальной оси." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/real_data_base_train_3.png" description="Рис 18. Распределение реальных данных. Не меняется во времени. Шаг обучения отложен на вертикальной оси." width=520 %} </center>
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_dropout_l2_reg_train_3.png" description="" width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropout_l2_reg_train_3.png" description="" width=520 %} </center>
 <center>
-<img src="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_l2_reg_train_3.png" width="170"/>
-<img src="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_base_train_3.png" width="170"/>
-<img src="/images/posts/2018-04-03-generative-adversariala-networks/fake_data_dropout_train_3.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_l2_reg_train_3.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_base_train_3.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropout_train_3.png" width="170"/>
 </center>
 <center>
 Рис 19. Распределения сгенерированных данных от четырех моделей. Шаг обучения отложен на вертикальной оси.
@@ -317,9 +317,9 @@ def generator(self, input, hparams):
 
 Так проходит процесс обучения модели:
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/training_3.gif" description="Рис. 20. Визуализация процесса обучения модели с близкими модами. Неподвижная смесь гауссиан &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/training_3.gif" description="Рис. 20. Визуализация процесса обучения модели с близкими модами. Неподвижная смесь гауссиан &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим." width=520 %} </center>
 
-<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversariala-networks/training_4.gif" description="Рис. 21. Визуализация процесса обучения модели с далекими модами. Неподвижная смесь гауссиан &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2018-04-03-generative-adversarial-networks/training_4.gif" description="Рис. 21. Визуализация процесса обучения модели с далекими модами. Неподвижная смесь гауссиан &mdash; плотность распределения реальных данных, движущаяся гауссиана &mdash; плотность распределения генерируемых примеров, синяя кривая &mdash; результат работы дискриминатора, т.е. вероятность примера быть настоящим." width=520 %} </center>
 
 Эти две анимации показывают обучение на распределениях данных из предыдущего раздела. Из этих анимаций видно, что при использовании достаточно большого генератора с множеством параметров он, пусть и довольно грубо, но способен приближать мультимодальное распределение, тем самым косвенно подтверждая то, что проблемы из предыдущего раздела возникают из-за недостаточно сложного генератора. Дискриминаторы на этих анимациях гораздо более шумные, чем в разделе про нахождение параметров нормального распределения, но, тем не менее, к концу обучения начинают напоминать зашумленную горизонтальную прямую $D(x)=1/2$.
 

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Generative adversarial network
+title: Generative adversarial networks
 date: '2018-04-03 12:00:00 +0300'
 categories: ru posts
 ---

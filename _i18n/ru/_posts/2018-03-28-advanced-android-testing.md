@@ -327,12 +327,12 @@ public class NameRepositoryTest {
 
 Есть три способа инициализировать такие моки:
 
-1. Вызвать [Mockito.initMocks()](https://static.javadoc.io/org.mockito/mockito-core/2.2.28/org/mockito/MockitoAnnotations.html#initMocks(java.lang.Object)):
+1. Вызвать [MockitoAnnotations.initMocks()](https://static.javadoc.io/org.mockito/mockito-core/2.2.28/org/mockito/MockitoAnnotations.html#initMocks(java.lang.Object)):
 
 ```java
 @Before
 public void setUp() {
-  Mockito.initMocks(this);
+  MockitoAnnotations.initMocks(this);
 }
 ```
 

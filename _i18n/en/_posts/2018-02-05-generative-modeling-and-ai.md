@@ -128,7 +128,7 @@ Where $d$ is the dimensionality of the observed variable $x$. Now let’s rewrit
 
 1. Initialize parameters $W, b, \sigma$ with sensible random initial values.
 2. Sample ${x_i} \sim P(x)$. This basically means choosing a minibatch from the dataset.
-3. Compute expected values of latent variables $z\_i \sim P(z|x\_i)$ или $z\_i = \left(W^T W + \sigma^2 I \right)^{-1} W^T\left(x\_i - b\right) + \varepsilon, \varepsilon \sim N(0, \sigma^2 \left(W^T W + \sigma^2 I \right)^{-1})$.
+3. Compute latent variables $z\_i \sim P(z|x\_i)$ or $z\_i = \left(W^T W + \sigma^2 I \right)^{-1} W^T\left(x\_i - b\right) + \varepsilon, \varepsilon \sim N(0, \sigma^2 \left(W^T W + \sigma^2 I \right)^{-1})$.
 4. Substitute $x\_i, z\_i$  in formula (1) for $L^{*}(x|\theta)$ and do a single step of the gradient ascent on parameters $W, b, \sigma$. It is important to remember that $z_i$ is an input here and that the back propagation should not propagate inside them.
 5. If both the data likelihood and expected values of latent variables do not change much, stop the training. Otherwise go to (2).
 

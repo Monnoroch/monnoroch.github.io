@@ -2,7 +2,7 @@
 layout: post
 title: Generative Adversarial Networks
 date: '2018-04-03 12:00:00 +0300'
-categories: ru posts
+categories: en posts
 ---
 In the [previous post](/posts/2018/02/05/generative-modeling-and-ai.html) we discussed a simple linear generative model called PPCA. Second generative model we will take a look at will be Generative Adversarial Networks (GAN). In this post we will describe the basic version of this model leaving advanced and more complicated versions and comparisons with other generative models for future posts.
 

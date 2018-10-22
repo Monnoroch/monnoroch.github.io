@@ -38,7 +38,7 @@ Let’s find the conditional probability of labels:
     \\frac{p(x|y)}{\\displaystyle\\sum\_{l \\in Y}{p(x|l)}}
 \\end{equation}
 
-Т.е.
+I.e.
 \\begin{equation}
     p(y=i|x)=\\frac{N(x;\mu\_i, \sigma\_i)}{\\displaystyle\sum_{l \in Y}{N(x;\mu\_l, \sigma\_l)}}
 \\end{equation}
@@ -248,7 +248,7 @@ Below are the training curves of the models: basic and with L2-regularization (a
 
 <center> {% include image_with_caption.html url="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_7.png" description="Figure. 7. Dynamics of change of the first parameter." width=520 %} </center>
 
-<center> {% include image_with_caption.html url="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_8.png" description="Figure. 8.  Dynamics of change of the second parameter." width=520 %} </center>
+<center> {% include image_with_caption.html url="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_8.png" description="Figure. 8. Dynamics of change of the second parameter." width=520 %} </center>
 
 It can be seen, that both models converge quickly to a good result. The model without regularization showed better performance, since this problem does not require regularization, which can decrease the learning speed. Let’s take a look at the training process:
 

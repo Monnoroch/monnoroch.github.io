@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Generative Modeling and AI &middot; 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/">
+                <h2 class="nav-title"></h2>
+            </a>
+            <ul>
+                <li><a href="/about">About</a></li>
+                <li><a href="/">All posts</a></li>
+            </ul>
+            
+                
+            
+                
+                    
+                        <a href="/ru/posts/2018/02/05/generative-modeling-and-ai.html">
+                            Russian
+                        </a>
+                    
+                    
+                    
+                
+            
+        </div>
+    </nav>
+    <main>
+        <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        Max Strakhov
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2018-02-05 09:20:00 +0000">February 05, 2018</time>
+    
+  </div>
+
+  <h1 class="post-title">Generative Modeling and AI</h1>
+  <div class="post-line"></div>
+
+  <p>In the <a href="/posts/2017/10/30/generative-modeling-with-deep-learning.html">previous chapter</a> we discussed classical discriminative models in machine learning and went over simple examples of such models. This time we are going to look at the bigger picture.</p>
+
+<p><center> <table class="image">
+    <caption align="bottom"></caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/learning_process.gif" alt="" width="520"/></td></tr>
+</table> </center></p>
+
+<h2>Artificial Intelligence</h2>
+
+<p>Artificial Intelligence (or AI) algorithms are able to solve problems typically solved by humans, ideally with matched or superior to human performance. It can be visual object recognition, understanding texts, controlling robots and performing logical or probabilistic inference. AI systems are algorithms that are able to decompose a fuzzy objective into these subproblems and effectively solve all of them. The general AI problem is not solved yet, but there are various approaches that might be the first steps towards solving it.</p>
+
+<p>In the twentieth century, the most popular approach was based on the idea that the world can be described by a set of rules, such as physical laws. And even if all of them cannot be programmed directly, it is reasonable to assume that given a large enough number of these rules, an AI system will be able to efficiently exist and solve arbitrary problems in the world that they describe. Naive application of this approach does not take into account the stochastic nature of some naturally occurring phenomena. To account for that, the set of rules has to be converted into a probabilistic model for making stochastic decisions given random variables as inputs.</p>
+
+<p>A complete description of the world would require so many rules that they could not be possibly programmed and supported manually. Hence, the idea to collect observations of the real world and use them to infer these rules automatically. This idea inherently supports both the natural stochasticity of some processes and the observed stochasticity that occurs when the causes of some deterministic processes are unknown. Automatic inference of the rules based on a set of observations is studied by the branch of mathematics called machine learning. Machine learning (or ML) is currently believed to be the most promising fundament for the general purpose AI.</p>
+
+<h2>Machine Learned AI</h2>
+
+<p>In the previous chapter we discussed classical problems of machine learning called classification and regression. We also implemented simple linear models for these problems called logistic and linear regressions. Real world problems are more complicated and have nonlinear nature. Models used for solving them are often based on artificial neural networks that usually outperform all other ML techniques on tasks with datasets that are large, have dense features and a lot of redundancy, such as analysing images, sounds, and texts.</p>
+
+<p>These techniques are able to automatically infer rules from observations and are very successfully applied commercially. However, they have a flaw which makes them not powerful enough to be used for solving the AI problem: they are designed to solve a very specific problem, like distinguishing cat from dog images. It is obvious, that a model summarizing an image into a single number is losing a lot of data. One does not have to understand what a cat is to be able to find it in a picture, it is enough to detect its major features. Image classification task only requires finding specific objects, but not necessarily understanding the entire scene. Building a classifier for all possible combinations of objects and all possible logical connections between them is impossible in practice because of the exponential amount of observations needed and computation involved. Because of that, classical supervised learning is not a very good fit for AI. A different approach is needed.</p>
+
+<h2>Probabilistic formulation of the world understanding problem</h2>
+
+<p>So, we have a set of observations and need to somehow understand the process that generated these observations. Let’s formulate understanding using probabilistic language. Let each observation be an instance of a random variable $x: \Omega \to X$, $x \sim P(x)$. There is a set of these observations $D = {x_i \sim P(x), i=\overline{1,N}}$. Then “understanding” these observations can be thought of as recovering the distribution $P(x)$.</p>
+
+<p>There are several approaches to solving this problem. One of the most generic methods is to introduce a latent variable. Suppose that every observation $x$ has a representation $z: \Omega \to Z$, $z \sim P(z)$. This representation can be thought of as a model’s “understanding” of the observation. For example the understanding of an image with a frame of a computer game would be the relevant internal state of the game and a camera position. Then $P(x) = \int_Z P(x|z)P(z)dz$. If one fix $P(z)$ to be a simple distribution and approximate  $P(x|z)$ and $P(z|x)$ with neural networks, one can obtain $P(x)$ with standard deep learning methods and using the formula above. Then $P(x)$ can be used for probabilistic inference. More precise formulations of such models will be given in the following chapters but it is important to note that complicated models based on that idea require computing intractable integrals which is usually done by approximating them using <a href="https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo">MCMC</a> or <a href="https://en.wikipedia.org/wiki/Variational_Bayesian_methods">Variational Inference</a>. Recovering $P(x)$ to draw samples from it is called a generative modelling problem.</p>
+
+<p>There is an alternative idea. Having an explicit $P(x)$ is not strictly necessary, it can be obtained implicitly as well. If a model can “imagine” the world, it is safe to assume that the model understands it. For example, if one can draw a person in different poses and from different angles it implies understanding of human anatomy and laws of perspective. If a classifier (which can be a human) can’t distinguish an example generated by a model from a real observation then the model have understood how the process generating these observations works at least as good as that classifier or better. This idea inspired development of generative modelling with implicit $P(x)$ using models that, given a set of observations, are able to generalize them by implicitly capturing $P(x)$ and able to generate new sample observations, indistinguishable from real ones. Suppose $z \sim N(0, 1)$ or any other distribution that is easy to sample. Then, in very general conditions, there exists $f: Z \to X$ such that $f(z) \sim P(x)$. Instead of finding $P(x)$, $f(x)$ can be found and then samples from $P(x)$ can be generated as $f(z), z \sim N(0,1)$. $f(z)$ can’t be used in probabilistic inference directly, but inference is not always the goal. And even if it is, Monte-Carlo integration, that only requires samples, can often be enough. Generative Adversarial Networks model, which we will look into in the next chapter, belongs to this class of models.</p>
+
+<h2>Principal Component Analysis</h2>
+
+<p>Let’s look at a simple generative latent variable model. Let $x \sim P(x)$ be an observed random variable. For example it can be a height of a person or an image of an object. Suppose that this variable can be fully explained by a latent (not observed) variable $z \sim P(z)$. In this analogy $z$ could be a person’s age or an object’s class and orientation. Suppose that $z$ is normally distributed, i.e. $P(z) = N(z; 0, 1)$. Suppose now that the observed variable $x$ depends on $z$ linearly with a normally distributed noise, i.e. $P(x|z) = N(x; Wz + b, \sigma^2 I)$. This model is called Probabilistic Principal Component Analysis (PPCA) and it is basically a probabilistic interpretation of a classical <a href="https://en.wikipedia.org/wiki/Principal_component_analysis">Principal Component Analysis (PCA)</a> model, where the observable $x$ depends on $z$ linearly without the noise.</p>
+
+<h2>Expectation Maximization</h2>
+
+<p><a href="https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm">Expectation Maximization (EM)</a> is an algorithm for training models with latent variables. The details can be found in specialized literature, but the general idea is quite simple:</p>
+
+<ol>
+<li>Initialize the model with some initial values of parameters.</li>
+<li>E-step. Fill in the latent variables with their expected values given current model parameters and observed variables.</li>
+<li>M-step. Maximize likelihood of training data with fixed latent variables. For example, using gradient ascent on parameters.</li>
+<li>Repeat (2, 3) while expected values of latent variables change significantly.</li>
+</ol>
+
+<p>In M-step full convergence is not required. A single step of the gradient ascent is enough. In this case the algorithm is called Generalized EM (GEM).</p>
+
+<h2>Solving PCA with EM</h2>
+
+<p>Let’s apply EM and maximum likelihood to our PCA model to find optimal model parameters $\theta = (W, b, \sigma)$. Joint likelihood of the observed and latent variables can be expressed as:</p>
+
+<p>\begin{equation}
+    L(x|\theta)=\log P(x|\theta)=\log P(x|\theta) \int_z q(z)=\int_z q(z) \log P(x|\theta)
+\end{equation}</p>
+
+<p>Where $q(z)$ is an arbitrary distribution. From here on conditioning on model parameters will be implied and we will not write it explicitly to make formulas easier to read.</p>
+
+<p>\begin{equation}
+    \int_z q(z) \log P(x|\theta)=\int_z q(z) \log \frac{P(x, z)}{P(z|x)}=\int_z q(z) \log \frac{P(x, z)q(z)}{q(z)P(z|x)}=
+\end{equation}
+\begin{equation}
+    =\int_z q(z) \log P(x, z)-\int_z q(z) \log q(z)+\int_z q(z) \log \frac{q(z)}{P(z|x)}=
+\end{equation}
+\begin{equation}
+    =\int_z q(z) \log P(x, z)+H\left(q\left(z\right)\right)+KL(q(z)||P(z|x))
+\end{equation}</p>
+
+<p>Where $KL(q(z)||P(z|x))=\int_z q(z) \log \frac{q(z)}{P(z|x)}$ is called $KL$-divergence between distributions $q(z)$ and $P(z|x)$. $H\left(q\left(z\right)\right)=-\int_z q(z) \log q(z)$ is called entropy of $q(z)$. $H\left(q\left(z\right)\right)$ does not depend on model parameters $\theta$, so this term can be ignored during optimization:</p>
+
+<p>\begin{equation}
+    L(x|\theta) \propto \int_z q(z) \log P(x, z)+KL(q(z)||P(z|x))=
+\end{equation}
+\begin{equation}
+    =\int_z q(z) \log \left( P(x|z)P(z)\right)+KL(q(z)||P(z|x))=
+\end{equation}
+\begin{equation}
+    =\int_z q(z) \log P(x|z)+\int_z q(z) \log P(z)+KL(q(z)||P(z|x)) \propto
+\end{equation}
+\begin{equation}
+    \propto \int_z q(z) \log P(x|z)+KL(q(z)||P(z|x)).
+\end{equation}</p>
+
+<p>$KL(q(z)||P(z|x))$ is non-negative and is equal to zero iff $q(z)=P(z|x)$. Keeping that in mind, let’s write down the EM-algorithm for this problem:</p>
+
+<ol>
+<li>E: $q(z) := P(z|x)$. This will zero out the second term $KL(q(z)||P(z|x))$.</li>
+<li>M: Maximize the first term $L(x|\theta) \propto \int_z q(z) \log P(x|z)$.</li>
+</ol>
+
+<p>PPCA is a linear model, so it can be solved analytically. Instead of doing that we will try to solve it using generalized EM with one step of SGD on each M-step. Because the data is i.i.d., we get:</p>
+
+<p>\begin{equation}
+    L(x|\theta) \propto  \int_z q(z) \log P(x|z)=\int_z q(z) \log \prod_{i=1}^{N} P(x_i|z_i)=\int_z q(z) \sum_{i=1}^{N} \log P(x_i|z_i)
+\end{equation}</p>
+
+<p>Note that $\int_zq(z)f(z)$ is an expectation $E_{z \sim q(z)} f(z)$. Then</p>
+
+<p>\begin{equation}
+    \int_z q(z) \sum_{i=1}^{N} \log P(x_i|z_i)=E_{z \sim q(z)} \sum_{i=1}^{N} \log P(x_i|z_i) \propto E_{z \sim q(z)} \frac{1}{N}\sum_{i=1}^{N} \log P(x_i|z_i)
+\end{equation}</p>
+
+<p>Because a single sample is an unbiased estimate of the expected value the next equation is approximately correct:</p>
+
+<p>\begin{equation}
+    E_{z \sim q(z)} \frac{1}{N}\sum_{i=1}^{N} \log P(x_i|z_i)=\frac{1}{N} \sum_{i=1}^{N} \log P(x_i|z_i).
+\end{equation}</p>
+
+<p>Substituting $P(x|z) = N(x; Wz + b, \sigma^2 I)$ we get:</p>
+
+<p>\begin{equation}
+    L(x|\theta) \propto \frac{1}{N} \sum_{i=1}^{N} \log P(x_i|z_i)=
+\end{equation}
+\begin{equation}
+    = \frac{1}{N} \sum_{i=1}^{N} \log\left(\frac{1}{\sqrt{\left(2 \pi \right)^d \left| \sigma^2 I\right|}}  \exp\left(-\frac{||x_i - \left(Wz_i + b\right)||^2}{2 \sigma^2}\right)\right)=
+\end{equation}
+\begin{equation}
+    = \frac{1}{N} \sum_{i=1}^{N} \log\left(\frac{1}{\sqrt{\left(2 \pi \sigma^2\right)^d}} \exp\left(-\frac{||x_i - \left(Wz_i + b\right)||^2}{2 \sigma^2}\right)\right)=
+\end{equation}
+\begin{equation}
+    = \frac{1}{N} \sum_{i=1}^{N} \left( - \log \sqrt{\left(2 \pi \sigma^2\right)^d} - \frac{1}{2 \sigma^2}{||x_i - b - W z_i||}^2\right)
+\end{equation}
+or
+\begin{equation}
+    L(x|\theta) \propto L^{*}(x|\theta)=-\frac{1}{N} \sum_{i=1}^{N} \left(d\log\left(\sigma^2\right) + \frac{1}{\sigma^2}{||x_i - b - W z_i||}^2\right)
+\end{equation}
+<center>Formula 1. The loss function, proportional to PPCAs likelihood.</center></p>
+
+<p>Where $d$ is the dimensionality of the observed variable $x$. Now let’s rewrite the GEM-algorithm for PPCA. $P(x|z) = N(x; Wz + b, \sigma^2 I)$, so $P(z|x)=N\left(z; \left(W^T W + \sigma^2 I \right)^{−1} W^T\left(x − b\right), \sigma^2 \left(W^T W + \sigma^2 I \right)^{−1} \right)$. Then GEM-algorithm goes like so:</p>
+
+<ol>
+<li>Initialize parameters $W, b, \sigma$ with sensible random initial values.</li>
+<li>Sample ${x_i} \sim P(x)$. This basically means choosing a minibatch from the dataset.</li>
+<li>Compute latent variables $z_i \sim P(z|x_i)$ or $z_i = \left(W^T W + \sigma^2 I \right)^{-1} W^T\left(x_i - b\right) + \varepsilon, \varepsilon \sim N(0, \sigma^2 \left(W^T W + \sigma^2 I \right)^{-1})$.</li>
+<li>Substitute $x_i, z_i$  in formula (1) for $L^{*}(x|\theta)$ and do a single step of the gradient ascent on parameters $W, b, \sigma$. It is important to remember that $z_i$ is an input here and that the back propagation should not propagate inside them.</li>
+<li>If both the data likelihood and expected values of latent variables do not change much, stop the training. Otherwise go to (2).</li>
+</ol>
+
+<p>After the model is trained, generated observations can be obtained as samples from
+\begin{equation}
+    P(x)=N(x; b, W W^T + \sigma^2 I)
+\end{equation}</p>
+
+<h2>Numerical solution for PCA</h2>
+
+<p>Let’s now train the PPCA model using standard SGD. To understand it better we will again examine how the model works on a toy example. The complete code can be found <a href="https://github.com/Monnoroch/generative/tree/master/ppca">here</a> and in this article only the key points will be highlighted.</p>
+
+<p>Let $P(x)=N(x;\begin{pmatrix} 5 \\ 10 \end{pmatrix}, \begin{pmatrix} 1.2^2 &amp; 0 \\ 0 &amp; 2.4^2 \end{pmatrix})$ &mdash; two-dimensional normal distribution with diagonal covariance matrix. $P(z)=N(z; 0, 1)$ &mdash; one-dimensional normal distributions of latent representations.</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 1. Ellipse around the mean that covers 95% of points from $P(x)$.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/ellipse_around_average.png" alt="Fig. 1. Ellipse around the mean that covers 95% of points from $P(x)$." width="520"/></td></tr>
+</table> </center></p>
+
+<p>The first thing to do is to generate the training data from $P(x)$:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">normal_samples</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+  <span class="k">def</span> <span class="nf">example</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">MultivariateNormalDiag</span><span class="p">(</span>
+     <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.2</span><span class="p">,</span> <span class="mf">2.4</span><span class="p">])</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensors</span><span class="p">([</span><span class="mf">0.</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">repeat</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">example</span><span class="p">())</span>
+    <span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+</code></pre></div>
+<p>Now let’s define model parameters:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">input_size</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">latent_space_size</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">stddev</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+  <span class="s2">&quot;stddev&quot;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+<span class="n">biases</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+  <span class="s2">&quot;biases&quot;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">input_size</span><span class="p">]))</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+  <span class="s2">&quot;Weights&quot;</span><span class="p">,</span>
+   <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal</span><span class="p">(</span>
+     <span class="p">[</span><span class="n">input_size</span><span class="p">,</span> <span class="n">latent_space_size</span><span class="p">],</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+</code></pre></div>
+<p>Then latent representations can be obtained for the training data:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">get_latent</span><span class="p">(</span><span class="n">visible</span><span class="p">,</span> <span class="n">latent_space_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+  <span class="n">matrix</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matrix_inverse</span><span class="p">(</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">transpose_a</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+      <span class="o">+</span> <span class="n">stddev</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">latent_space_size</span><span class="p">))</span>
+  <span class="n">mean_matrix</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">transpose_b</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+  <span class="c1"># Multiply each vector in a batch by a matrix.</span>
+  <span class="n">expected_latent</span> <span class="o">=</span> <span class="n">batch_matmul</span><span class="p">(</span>
+    <span class="n">mean_matrix</span><span class="p">,</span> <span class="n">visible</span> <span class="o">-</span> <span class="n">biases</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+  <span class="n">stddev_matrix</span> <span class="o">=</span> <span class="n">stddev</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">matrix</span>
+  <span class="n">noise</span> <span class="o">=</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">MultivariateNormalFullCovariance</span><span class="p">(</span>
+      <span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">latent_space_size</span><span class="p">),</span>
+      <span class="n">stddev_matrix</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">])</span>
+  <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">stop_gradient</span><span class="p">(</span><span class="n">expected_latent</span> <span class="o">+</span> <span class="n">noise</span><span class="p">)</span>
+</code></pre></div>
+<p>Note the tf.stop_gradient(...). This function prevents parameters inside the input subgraph to influence the gradient updates. This is needed so that $q(z) := P(z|x)$ would remain fixed during the M-step, which is required for EM to work correctly.</p>
+
+<p>Let’s now define the loss function $L^{*}(x|\theta)$ to optimize on the M-step:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">sample</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="n">latent_sample</span> <span class="o">=</span> <span class="n">get_latent</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">latent_space_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+<span class="n">norm_squared</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">((</span><span class="n">sample</span> <span class="o">-</span> <span class="n">biases</span> <span class="o">-</span>
+  <span class="n">batch_matmul</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">latent_sample</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span>
+  <span class="n">input_size</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">stddev</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="o">/</span><span class="n">stddev</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">norm_squared</span><span class="p">)</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">AdamOptimizer</span><span class="p">(</span><span class="n">learning_rate</span><span class="p">)</span>
+  <span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">var_list</span><span class="o">=</span><span class="p">[</span><span class="n">bias</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">stddev</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Now the model is ready to be trained. Here is its training curve:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 2. PPCAs training curve.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/learning_curve.png" alt="Fig. 2. PPCAs training curve." width="520"/></td></tr>
+</table> </center></p>
+
+<p>It can be seen that the model converges quite smoothly and quickly because the problem is very simple. Here are the learned model parameters:</p>
+
+<p><center><img src="/images/posts/2018-02-05-generative-modeling-and-ai/displacement_graphs_b_0.png" height=256 alt="Ошибка"/><img src="/images/posts/2018-02-05-generative-modeling-and-ai/displacement_graphs_b_1.png" height=256 alt="Точность"/></center>
+<center>Fig. 3. Learned biases (parameter $b$).</center></p>
+
+<p>It can be seen that $b_i$ converge to analytical values $5$ and $10$ very quickly. Let’s now look at parameters $W, \sigma$:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 4. Learned parameter $\sigma$.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/graph_sigma.png" alt="Fig. 4. Learned parameter $\sigma$." width="1024"/></td></tr>
+</table> </center></p>
+
+<p>It can be seen that $\sigma$ has converged to $1.2$, i.e. to the smallest variance axes of the input distribution, as expected.</p>
+
+<p><center> <table class="image">
+    <caption align="bottom"></caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/weight_0.png" alt="" width="1024"/></td></tr>
+</table> </center>
+<center> <table class="image">
+    <caption align="bottom">Fig. 5. Learned parameters $W_{i0}$.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/weight_1.png" alt="Fig. 5. Learned parameters $W\_{i0}$." width="1024"/></td></tr>
+</table> </center></p>
+
+<p>$W$, in turn, has approximately converged to a value for which $W W^T + \sigma^2 I=\begin{pmatrix} 1.2^2 &amp; 0 \\ 0 &amp; 2.4^2 \end{pmatrix}$. Substituting these values in the model we get $$P(x)=N(x; b, W W^T + \sigma^2 I)=N(x; \begin{pmatrix} 5 \\ 10 \end{pmatrix}, \begin{pmatrix} 1.2^2 &amp; 0 \\ 0 &amp; 2.4^2 \end{pmatrix})$$, which means that we have recovered the data distribution.</p>
+
+<p>Let’s look at the data distributions. The latent variable is one-dimensional, so it is displayed as a one-dimensional distribution. The visible variable is two dimensional, but its true covariance matrix is diagonal so we will display it as two projections of the two-dimensional distribution on the coordinate axes. This is how projections of true and learned $P(x)$ on the first coordinate axis look like:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 6. The projection of the true $P(x)$ on the first coordinate axis.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/sample_real_0.png" alt="Fig. 6. The projection of the true $P(x)$ on the first coordinate axis." width="1024"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 7. The projection of the learned $P(x|\theta)$ on the first coordinate axis.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/sample_learnerd_0.png" alt="Fig. 7. The projection of the learned $P(x|\theta)$ on the first coordinate axis." width="900"/></td></tr>
+</table> </center></p>
+
+<p>And this is how projections of true and learned $P(x)$ on the second coordinate axis look like:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 8. The projection of the true $P(x)$ on the second coordinate axis.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/sample_real_1.png" alt="Fig. 8. The projection of the true $P(x)$ on the second coordinate axis." width="900"/></td></tr>
+</table> </center>
+<center> <table class="image">
+    <caption align="bottom">Fig. 9. The projection of the learned $P(x|\theta)$ on the second coordinate axis.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/sample_learnerd_1.png" alt="Fig. 9. The projection of the learned $P(x|\theta)$ on the second coordinate axis." width="900"/></td></tr>
+</table> </center></p>
+
+<p>This is how true and learned distributions $P(z)$ look like:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 10. True distribution $P(z)=N(z; 0, 1)$.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/latent_sample_real.png" alt="Fig. 10. True distribution $P(z)=N(z; 0, 1)$." width="900"/></td></tr>
+</table> </center>
+<center> <table class="image">
+    <caption align="bottom">Fig. 11. Learned distribution $P(z|\theta)$.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/latent_sample_learned.png" alt="Fig. 11. Learned distribution $P(z|\theta)$." width="900"/></td></tr>
+</table> </center></p>
+
+<p>It can be seen that all learned distributions have converged to distributions very similar to their true values. Let’s look at the training process for that model to be completely sure that it has actually recovered the true $P(x)$:
+<center> <table class="image">
+    <caption align="bottom">Fig. 12. The training process for the PPCA model. The learned $P(x|\theta)$ converges to the true $P(x)$.</caption>
+    <tr><td><img src="/images/posts/2018-02-05-generative-modeling-and-ai/learning_process.gif" alt="Fig. 12. The training process for the PPCA model. The learned $P(x|\theta)$ converges to the true $P(x)$." width="520"/></td></tr>
+</table> </center></p>
+
+<h2>Conclusion</h2>
+
+<p>The described model is a probabilistic version of the classical PCA model, which is a linear model. We reused the math for the EM algorithm from the <a href="http://www.robots.ox.ac.uk/%7Ecvrg/hilary2006/ppca.pdf">original paper</a> and built a numerical GEM algorithm on top of it. We showed that the resulting model converges to an analytical solution on a toy problem. Naturally if true $P(x)$ would not be normal the model would not recover it perfectly the same way that PCA can only perfectly fit data that forms a hyperplane in the feature space. To solve more complicated data distribution approximation problems more complicated nonlinear models are needed. One of these models called Generative Adversarial Networks will be described in the next chapter.</p>
+
+<h2>Acknowledgements</h2>
+
+<p>Thanks <a href="https://www.linkedin.com/in/olga-talanova-b319b761/">Olga Talanova</a> for reviewing the text. Thanks <a href="https://github.com/andrewtar">Andrei Tarashkevich</a> for helping with converting the text to Jekyll.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/posts/2018/04/03/generative-adversarial-networks.html" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/posts/2017/10/30/generative-modeling-with-deep-learning.html" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+    <footer>
+        <span>
+            &copy; <time datetime="2018-10-27 19:30:08 +0000">2018</time> You can find me on <a href="https://github.com/Monnoroch">GitHub</a>.
+        </span>
+    </footer>
+    <script src="/scripts/responsive.js" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']]
+            }
+        });
+    </script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</body>
+</html>

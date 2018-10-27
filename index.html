@@ -1,32 +1,124 @@
----
-layout: default
-title: Home
----
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<div class="catalogue">
-  {% for post in paginator.posts %}
-    <a href="{{ post.url | prepend: site.baseurl }}" class="catalogue-item">
+  <title>
+    
+      
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/">
+                <h2 class="nav-title"></h2>
+            </a>
+            <ul>
+                <li><a href="/about">About</a></li>
+                <li><a href="/">All posts</a></li>
+            </ul>
+            
+                
+            
+                
+                    
+                        <a href="/ru/">
+                            Russian
+                        </a>
+                    
+                    
+                    
+                
+            
+        </div>
+    </nav>
+    <main>
+        <div class="catalogue">
+  
+    <a href="/posts/2018/10/27/go-inject-dependency-injection-library-for-go.html" class="catalogue-item">
       <div>
-        <time datetime="{{ post.date }}" class="catalogue-time">{{ post.date | date: "%B %d, %Y" }}</time>
-        <h1 class="catalogue-title">{{ post.title }}</h1>
+        <time datetime="2018-10-27 09:00:00 +0000" class="catalogue-time">October 27, 2018</time>
+        <h1 class="catalogue-title">Go-inject — Dependency Injection Library for Go</h1>
         <div class="catalogue-line"></div>
 
         <p>
-          {{ post.content | truncatewords: 30 | strip_html }}
+          There are many resources on the web that try to define and explain Dependency Injection (a.k.a. DI). DI is a very useful software engineering technique, yet Go lacks any...
         </p>
 
       </div>
     </a>
-  {% endfor %}
+  
+    <a href="/posts/2018/04/03/generative-adversarial-networks.html" class="catalogue-item">
+      <div>
+        <time datetime="2018-04-03 09:00:00 +0000" class="catalogue-time">April 03, 2018</time>
+        <h1 class="catalogue-title">Generative Adversarial Networks</h1>
+        <div class="catalogue-line"></div>
+
+        <p>
+          In the previous post we discussed a simple linear generative model called PPCA. Second generative model we will take a look at will be Generative Adversarial Networks (GAN). In...
+        </p>
+
+      </div>
+    </a>
+  
+    <a href="/posts/2018/02/05/generative-modeling-and-ai.html" class="catalogue-item">
+      <div>
+        <time datetime="2018-02-05 09:20:00 +0000" class="catalogue-time">February 05, 2018</time>
+        <h1 class="catalogue-title">Generative Modeling and AI</h1>
+        <div class="catalogue-line"></div>
+
+        <p>
+          In the previous chapter we discussed classical discriminative models in machine learning and went over simple examples of such models. This time we are going to look at the...
+        </p>
+
+      </div>
+    </a>
+  
+    <a href="/posts/2017/10/30/generative-modeling-with-deep-learning.html" class="catalogue-item">
+      <div>
+        <time datetime="2017-10-30 21:20:00 +0000" class="catalogue-time">October 30, 2017</time>
+        <h1 class="catalogue-title">Probabilistic interpretaton of classical Machine Learning models</h1>
+        <div class="catalogue-line"></div>
+
+        <p>
+          With this article I am starting a series covering generative models in machine learning. We will review classical machine learning (ML) problems, look at generative modelling, determine its differences from...
+        </p>
+
+      </div>
+    </a>
+  
 </div>
 
 <div class="pagination">
-  {% if paginator.previous_page %}
-    <a href="{{ paginator.previous_page_path | prepend: site.baseurl }}" class="left arrow">&#8592;</a>
-  {% endif %}
-  {% if paginator.next_page %}
-    <a href="{{ paginator.next_page_path | prepend: site.baseurl }}" class="right arrow">&#8594;</a>
-  {% endif %}
+  
+  
 
-  <span>{{ paginator.page }}</span>
+  <span>1</span>
 </div>
+
+    </main>
+    <footer>
+        <span>
+            &copy; <time datetime="2018-10-27 19:30:08 +0000">2018</time> You can find me on <a href="https://github.com/Monnoroch">GitHub</a>.
+        </span>
+    </footer>
+    <script src="/scripts/responsive.js" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']]
+            }
+        });
+    </script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</body>
+</html>

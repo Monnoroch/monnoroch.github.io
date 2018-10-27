@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>/posts/2017/10/30/generative-modeling-with-deep-learning.html</loc>
+<lastmod>2017-10-30T21:20:00+00:00</lastmod>
+</url>
+<url>
+<loc>/posts/2018/02/05/generative-modeling-and-ai.html</loc>
+<lastmod>2018-02-05T09:20:00+00:00</lastmod>
+</url>
+<url>
+<loc>/posts/2018/04/03/generative-adversarial-networks.html</loc>
+<lastmod>2018-04-03T09:00:00+00:00</lastmod>
+</url>
+<url>
+<loc>/posts/2018/10/27/go-inject-dependency-injection-library-for-go.html</loc>
+<lastmod>2018-10-27T09:00:00+00:00</lastmod>
+</url>
+<url>
+<loc>/about.html</loc>
+</url>
+<url>
+<loc>/</loc>
+</url>
+</urlset>

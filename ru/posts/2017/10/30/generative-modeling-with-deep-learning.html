@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Вероятностная интерпретация классических моделей машинного обучения &middot; 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/ru/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/ru/">
+                <h2 class="nav-title"></h2>
+            </a>
+            <ul>
+                <li><a href="/ru/about">О блоге</a></li>
+                <li><a href="/ru/">Все посты</a></li>
+            </ul>
+            
+                
+                    
+                        <a href="/posts/2017/10/30/generative-modeling-with-deep-learning.html">
+                            English
+                        </a>
+                    
+                    
+                    
+                
+            
+                
+            
+        </div>
+    </nav>
+    <main>
+        <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        Max Strakhov
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-10-30 21:20:00 +0000">October 30, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Вероятностная интерпретация классических моделей машинного обучения</h1>
+  <div class="post-line"></div>
+
+  <p>Этой статьей я начинаю серию, посвященную генеративным моделям в машинном обучении. Мы посмотрим на классические задачи машинного обучения, определим, что такое генеративное моделирование, посмотрим на его отличия от классических задач машинного обучения, взглянем на существующие подходы к решению этой задачи и погрузимся в детали тех из них, что основаны на обучении глубоких нейронных сетей.
+Но прежде, в качестве введения, мы посмотрим на классические задачи машинного обучения в их вероятностной постановке.</p>
+
+<h2>Классические задачи машинного обучения</h2>
+
+<p>Две классические задачи машинного обучения &mdash; это классификация и регрессия. Давайте посмотрим ближе на каждую из них. Рассмотрим постановку обеих задач и простейшие примеры их решения.</p>
+
+<h2>Классификация</h2>
+
+<p>Задача классификации &mdash; это задача присвоения меток объектам. Например, если объекты &mdash; это фотографии, то метками может быть содержание фотографий: содержит ли изображение пешехода или нет, изображен ли мужчина или женщина, какой породы собака изображена на фотографии. Обычно есть набор взаимоисключающих меток и сборник объектов, для которых эти метки известны. Имея такую коллекцию данных необходимо автоматически расставлять метки на произвольных объектах того же типа, что были в изначальной коллекции. Давайте формализуем это определение.
+Допустим, есть множество объектов $X$. Это могут быть точки на плоскости, рукописные цифры, фотографии или музыкальные произведения. Допустим также, что есть конечное множество меток $Y$. Эти метки могут быть пронумерованы. Мы будем отождествлять метки и их номера. Таким образом $Y=\{red, green, blue\}$ в нашей нотации будет обозначаться как $Y=\{1, 2, 3\}$. Если $Y=\{0, 1\}$, то задача называется задачей бинарной классификации, если меток больше двух, то обычно говорят, что это просто задача классификации. Дополнительно, у нас есть входная выборка $D=\{(x_i, y_i), x_i \in X, y_i \in Y, i=\overline{1,N}\}$. Это те самые размеченные примеры, на которых мы и будем обучаться проставлять метки автоматически. Так как мы не знаем классов всех объектов точно, мы считаем, что класс объекта &mdash; это случайная величина, которую мы для простоты тоже будем обозначать $y$. Например, фотография собаки может классифицироваться как собака с вероятностью 0.99 и как кошка с вероятностью 0.01. Таким образом, чтобы классифицировать объект, нам нужно знать условное распределение этой случайной величины на этом объекте $p(y|x)$.</p>
+
+<p>Задача нахождения $p(y|x)$ при данном множестве меток $Y$ и данном наборе размеченных примеров $D=\{(x_i, y_i), x_i \in X, y_i \in Y,i=\overline{1,N}\}$ называется задачей классификации.</p>
+
+<h2>Вероятностная постановка задачи классификации</h2>
+
+<p>Чтобы решить эту задачу, удобно переформулировать ее на вероятностном языке. Итак, есть множество объектов $X$ и множество меток $Y$. $\xi: \Omega \to X$ &mdash; случайная величина, представляющая собой случайный объект из $X$. $\eta: \Omega \to Y$ &mdash; случайная величина, представляющая собой случайную метку из $Y$. Рассмотрим случайную величину $(\xi,\eta): \Omega \to (X, Y)$ с распределением $p(x, y)$, которое является совместным распределением объектов и их классов. Тогда, размеченная выборка &mdash; это сэмплы из этого распределения $(x_i, y_i) \sim p(x, y)$. Мы будем предполагать, что все сэмплы независимо и одинаково распределены (i.i.d в англоязычной литературе).</p>
+
+<p>Задача классификации теперь может быть переформулирована как задача нахождения $p(x|y)$ при данном сэмпле $D=\{(x_i, y_i) \sim p(x, y), i=\overline{1,N}\}$.</p>
+
+<h2>Классификация двух нормальных распределений</h2>
+
+<p>Давайте посмотрим, как это работает на простом примере. Положим $X=R$, $Y=\{0, 1\}$, $p(x|y=0)=N(x; \mu_0,\sigma_0)$, $p(x|y=1)=N(x; \mu_1,\sigma_1)$, $p(y=0)=p(y=1)=1/2$. То есть, у нас есть две гауссианы, из которых мы равновероятно сэмплируем данные и нам нужно, имея точку из $R$, предсказать, из какой гауссианы она была получена.</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Рис. 1. Плотности распределения $p(x|y=1)$ и $p(x|y=0)$.</caption>
+    <tr><td><img src="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_1.png" alt="Рис. 1. Плотности распределения $p(x|y=1)$ и $p(x|y=0)$." width="520"/></td></tr>
+</table> </center></p>
+
+<p>Так как область определения гауссианы &mdash; вся числовая прямая, очевидно, что эти графики пересекаются, а значит, есть такие точки, в которых плотности вероятности $p(x|y=0)$ и $p(x|y=1)$ равны.</p>
+
+<p>Найдем условную вероятность классов:</p>
+
+<p>\begin{equation}
+    p(y|x)=\frac{p(x,y)}{p(x)}=\frac{p(x|y)p(y)}{\displaystyle\sum_{l \in Y}{p(x|l)p(l)}}=\{p(y)=\frac{1}{2}\}=
+    \frac{p(x|y)}{\displaystyle\sum_{l \in Y}{p(x|l)}}
+\end{equation}</p>
+
+<p>Т.е.
+\begin{equation}
+    p(y=i|x)=\frac{N(x;\mu_i, \sigma_i)}{\displaystyle\sum_{l \in Y}{N(x;\mu_l, \sigma_l)}}
+\end{equation}</p>
+
+<p>Вот так будут выглядеть график плотности вероятностей $p(y=1|x)$:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Рис. 2. Плотности распределения $p(x|y=1)$, $p(x|y=0)$ и $p(y=1|x)$. $p(y=1|x)=1/2$ там, где две гауссианы пересекаются. </caption>
+    <tr><td><img src="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_2.png" alt="Рис. 2. Плотности распределения $p(x|y=1)$, $p(x|y=0)$ и $p(y=1|x)$. $p(y=1|x)=1/2$ там, где две гауссианы пересекаются. " width="520"/></td></tr>
+</table> </center></p>
+
+<p>Видно, что близко к модам гауссиан уверенность модели в принадлежности точки конкретному классу очень высока (вероятность близка к нулю или единице), а там, где графики пересекаются модель может только случайно угадывать и выдает $p(x|y=1)=p(x|y=0)=1/2$.</p>
+
+<h2>Метод максимизации правдоподобия</h2>
+
+<p>Большая часть практических задач не может быть решена вышеописанным способом, так как $p(x|y)$ обычно не задано явно. Вместо этого обычно имеется набор данных $D=\{(x_i, y_i) \sim p(x, y), i=\overline{1,N}\}$ с некоторой неизвестной совместной плотностью распределения $p(x, y)$. В таком случае для решения задачи используется <a href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">метод максимального правдоподобия</a>. Формальное определение и обоснование метода можно найти в вашей любимой книге по статистике или по ссылке выше, а в данной статье я опишу его интуитивный смысл.</p>
+
+<p>Принцип максимизации правдоподобия говорит, что если есть некоторое неизвестное распределение $p(x)$, из которого есть набор сэмплов $D=\{x_i \sim p(x), i=\overline{1,N}\}$, и некоторое известное параметрическое семейство распределений $q(x|\theta)$, то для того, чтобы $q(x|\theta)$ максимально приблизило $p(x)$, нужно найти такой вектор параметров $\theta$, который максимизирует совместную вероятность данных (правдоподобие) $q(x_1,\dotsc, x_N|\theta)$, которое еще называют правдоподобием данных. Доказано, что при разумных условиях эта оценка является состоятельной и несмещенной оценкой истинного вектора параметров. Если сэмплы выбраны из $p(x)$, то есть данные i.i.d., то совместное распределение распадается на произведение распределений:</p>
+
+<p>\begin{equation}
+    \arg\ \max_{\theta} q(x_1, \dotsc, x_N|\theta)=\arg\ \max_{\theta} \prod_{i=1..N} q(x_i|\theta)
+\end{equation}</p>
+
+<p>Логарифм и умножение на константу &mdash; монотонно возрастающие функции и не меняют положений максимумов, потому совместную плотность можно внести под логарифм и умножить на $\frac1N$:</p>
+
+<p>\begin{equation}
+    \arg\ \max_{\theta} \prod_{i=1..N} q(x_i|\theta)=
+    \arg\ \max_{\theta} \frac{1}{N}\log\prod_{i=1..N} q(x_i|\theta)=
+\end{equation}
+\begin{equation}
+    =\arg\ \max_{\theta} \frac{1}{N}\sum_{i=1..N} \log q(x_i|\theta)
+\end{equation}</p>
+
+<p>Последнее выражение, в свою очередь, является несмещенной и состоятельной оценкой ожидаемого логарифма правдоподобия:</p>
+
+<p>\begin{equation}
+    \arg\ \max_{\theta} \frac{1}{N}\sum_{i=1..N} \log q(x_i|\theta)=
+    \arg\ \max_{\theta} \mathbb E_{x\sim p(x)} \log q(x|\theta)
+\end{equation}</p>
+
+<p>Задачу максимизации можно переписать как задачу минимизации:</p>
+
+<p>\begin{equation}
+    \arg\ \max_{\theta} \mathbb E_{x\sim p(x)} \log q(x|\theta)=
+    \arg\ \min_{\theta} \left( -\mathbb E_{x\sim p(x)} \log q(x|\theta) \right)=
+    \arg\ \min_{\theta} H(p, q)
+\end{equation}</p>
+
+<p>Последняя величина называется кросс-энтропией распределений $p$ и $q$. Именно ее и принято оптимизировать для решения задач обучения с подкреплением (supervised learning).</p>
+
+<p>Минимизацию на протяжении этого цикла статей мы будем проводить с помощью <a href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">Stochastic Gradient Descent (SGD)</a>, а точнее, его расширения на основе адаптивных моментов, пользуясь тем, что сумма градиентов по подвыборке (так называемому “минибатчу”) является несмещенной оценкой градиента минимизируемой функции.</p>
+
+<h2>Классификация двух нормальных распределений логистической регрессией</h2>
+
+<p>Давайте попробуем решить ту же задачу, что была описана выше, методом максимального правдоподобия, взяв в качестве параметрического семейства $q(y|x, \theta)$ простейшую нейронную сеть. Получившаяся модель называется логистической регрессией. Полный код модели можно найти <a href="https://github.com/Monnoroch/generative/tree/master/logistic_regression">тут</a>, в статье же освещены только ключевые моменты.</p>
+
+<p>Для начала нужно сгенерировать данные для обучения. Нужно сгенерировать минибатч меток классов и для каждой метки сгенерировать точку из соответствующей гауссианы:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">input_batch</span><span class="p">(</span><span class="n">dataset_params</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+    <span class="n">input_mean</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">dataset_params</span><span class="o">.</span><span class="n">input_mean</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">input_stddev</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">dataset_params</span><span class="o">.</span><span class="n">input_stddev</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataset_params</span><span class="o">.</span><span class="n">input_mean</span><span class="p">)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">probs</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="o">/</span><span class="n">count</span><span class="p">]</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">])</span>
+    <span class="n">components</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">components</span>
+            <span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span>
+                <span class="n">loc</span><span class="o">=</span><span class="n">input_mean</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span>
+                <span class="n">scale</span><span class="o">=</span><span class="n">input_stddev</span><span class="p">[</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+            <span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">components</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">samples</span>
+</code></pre></div>
+<p><br/>
+Определим наш классификатор. Он будет простейшей нейронной сетью без скрытых слоев:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">discriminator</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+    <span class="n">output_size</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">param1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+        <span class="s2">&quot;weights&quot;</span><span class="p">,</span>
+        <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal</span><span class="p">([</span><span class="n">output_size</span><span class="p">],</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">param2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+        <span class="s2">&quot;biases&quot;</span><span class="p">,</span>
+        <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">output_size</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">input</span> <span class="o">*</span> <span class="n">param1</span> <span class="o">+</span> <span class="n">param2</span>
+</code></pre></div>
+<p>И запишем функцию потерь &mdash; кросс-энтропию между распределениями реальных и предсказанных меток:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">labels</span><span class="p">,</span> <span class="n">samples</span> <span class="o">=</span> <span class="n">input_batch</span><span class="p">(</span><span class="n">dataset_params</span><span class="p">,</span> <span class="n">training_params</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+<span class="n">predicted_labels</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid_cross_entropy_with_logits</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">logits</span><span class="o">=</span><span class="n">predicted_labels</span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Ниже приведены графики обучения двух моделей: базовой и с L2-регуляризацией:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Рис. 3. Кривая обучения логистической регрессии.</caption>
+    <tr><td><img src="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_3.png" alt="Рис. 3. Кривая обучения логистической регрессии." width="520"/></td></tr>
+</table> </center></p>
+
+<p>Видно, что обе модели быстро сходятся к хорошему результату. Модель без регуляризации показывает себя лучше потому, что в этой задаче не нужна регуляризация, а она слегка замедляет скорость обучения. Давайте взглянем поближе на процесс обучения:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Рис. 4. Процесс обучения логистический регрессии.</caption>
+    <tr><td><img src="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_4.gif" alt="Рис. 4. Процесс обучения логистический регрессии." width="520"/></td></tr>
+</table> </center></p>
+
+<p>Видно, что обучаемая разделяющая поверхность постепенно сходится к аналитически вычисленной, при чем, чем она ближе, тем медленнее сходится из-за все более слабого градиента функции потерь.</p>
+
+<h2>Регрессия</h2>
+
+<p>Задача регрессии &mdash; это задача предсказания одной случайной величины $\eta: \Omega \to Y$ на основе значений других случайных величин $\xi_i: \Omega \to X_i$. Например, предсказание роста человека по его полу (дискретная случайная величина) и возрасту (непрерывная случайная величина). Точно так же, как и в задаче классификации, нам дана размеченная выборка $D=\{(x_i,y_i) \sim p(x, y), i=\overline{1,N}\}$. Предсказать значение случайной величины напрямую невозможно, ведь она случайная и, по сути, является функцией, поэтому формально задача записывается как предсказание ее условного ожидаемого значения:</p>
+
+<p>\[
+    f(x)=\mathbb E(\eta|\xi=x)= \int\limits_Y y\ p(y|x)\mathrm{d}y
+\]</p>
+
+<h2>Регрессия линейно зависимых величин с нормальным шумом</h2>
+
+<p>Давайте посмотрим, как решается задача регрессии на простом примере. Пусть есть две независимые случайные величины $\xi \sim Uniform(0, 10), \varepsilon \sim N(0,1)$. Например, это высота дерева и нормальный случайный шум. Тогда мы можем предположить, что возраст дерева является случайной величиной $\eta=a \xi + b + \varepsilon$. В таком случае по линейности математического ожидания и независимости $\xi$ и $\varepsilon$:</p>
+
+<p>\[
+    f(x)=E(\eta|\xi=x)=
+    a\ E(\xi|\xi=x)+b+E(\varepsilon|\xi=x)=
+\]
+\[
+    =a\ E(\xi|\xi=x)+b+E(\varepsilon)=
+    a\ x+b+0=a\ x+b
+\]</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Рис. 5. Линия регрессии задачи про линейно зависимые величины с шумом.</caption>
+    <tr><td><img src="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_5.gif" alt="Рис. 5. Линия регрессии задачи про линейно зависимые величины с шумом." width="520"/></td></tr>
+</table> </center></p>
+
+<h2>Решение задачи регрессии методом максимального правдоподобия</h2>
+
+<p>Давайте сформулируем задачу регрессии через метод максимального правдоподобия. Положим $q(y|x,\theta )=N(y; f(x; w), \sigma)$. Где $w$ &mdash; новый вектор параметров. Видно, что мы ищем  $f(x; w)$ &mdash; математическое ожидание $q(y|x,\theta)$, т.е. это корректно поставленная задача регрессии. Тогда</p>
+
+<p>\begin{equation}
+    \arg\ \min_{\theta} H(p, q)=
+    \arg\ \min_{\theta} \left( -\mathbb E_{x\sim p(x)} \log q(x|\theta) \right)=
+\end{equation}
+\begin{equation}
+    =\arg\ \min_{\theta} \left( -\mathbb E_{x\sim p(x)} \log N\left(y;f\left(x,w\right),\sigma\right) \right)=
+\end{equation}
+\begin{equation}
+    =\arg\ \min_{\theta} \left( -\mathbb E_{(x,y) \sim p(x, y)}\frac{\left(f\left(x; w\right) - y\right)^2}{\sigma^2} \right)
+\end{equation}</p>
+
+<p>Состоятельной и несмещенной оценкой этого матожидания будет среднее по выборке</p>
+
+<p>\[
+    \arg\ \min_{\theta}\left( -\sum_{i=1..N}\frac{\left(f\left(x_i; w\right) - y_i\right)^2}{\sigma^2} \right)
+\]</p>
+
+<p>Таким образом, для решения задачи регрессии удобно минимизировать среднеквадратичную ошибку на обучающей выборке.</p>
+
+<h2>Регрессия величины линейной регрессией</h2>
+
+<p>Давайте попробуем решить ту же задачу, что была выше, методом из предыдущего раздела, взяв в качестве параметрического семейства $q(y|x, \theta)$ простейшую возможную нейронную сеть. Получившаяся модель называется линейной регрессией. Полный код модели можно найти <a href="https://github.com/Monnoroch/generative/tree/master/linear_regression">тут</a>, в статье же освещены только ключевые моменты.</p>
+
+<p>Для начала нужно сгенерировать данные для обучения. Сначала мы генерируем минибатч входных переменных $\xi \sim Uniform(0, 10), \varepsilon \sim N(0,1)$, после чего получаем сэмпл исходной переменной $\eta=a \xi + b + \varepsilon$:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">input_batch</span><span class="p">(</span><span class="n">dataset_params</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">random_uniform</span><span class="p">([</span><span class="n">batch_size</span><span class="p">],</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">)</span>
+    <span class="n">noise</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="n">batch_size</span><span class="p">],</span> <span class="n">mean</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">(</span><span class="n">dataset_params</span><span class="o">.</span><span class="n">input_param1</span> <span class="o">*</span> <span class="n">samples</span> <span class="o">+</span> <span class="n">dataset_params</span><span class="o">.</span><span class="n">input_param2</span> <span class="o">+</span> <span class="n">noise</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">labels</span><span class="p">,</span> <span class="n">samples</span>
+</code></pre></div>
+<p><br/>
+Определим нашу модель. Она будет простейшей нейронной сетью без скрытых слоев:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">predicted_labels</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+    <span class="n">output_size</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">param1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+        <span class="s2">&quot;weights&quot;</span><span class="p">,</span>
+        <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal</span><span class="p">([</span><span class="n">output_size</span><span class="p">],</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">param2</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+        <span class="s2">&quot;biases&quot;</span><span class="p">,</span>
+        <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">output_size</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">input</span> <span class="o">*</span> <span class="n">param1</span> <span class="o">+</span> <span class="n">param2</span>
+</code></pre></div>
+<p><br/>
+И запишем функцию потерь &mdash; L2-расстояние между распределениями реальных и предсказанных значений:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">labels</span><span class="p">,</span> <span class="n">samples</span> <span class="o">=</span> <span class="n">input_batch</span><span class="p">(</span><span class="n">dataset_params</span><span class="p">,</span> <span class="n">training_params</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+<span class="n">predicted_labels</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid_cross_entropy_with_logits</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+    <span class="n">logits</span><span class="o">=</span><span class="n">predicted_labels</span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+<p><br/>
+Ниже приведены графики обучения двух моделей: базовой и с L2-регуляризацией:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Рис. 6. Кривая обучения линейной регрессии.</caption>
+    <tr><td><img src="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_6.png" alt="Рис. 6. Кривая обучения линейной регрессии." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Рис. 7. График изменения первого параметра с шагом обучения.</caption>
+    <tr><td><img src="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_7.png" alt="Рис. 7. График изменения первого параметра с шагом обучения." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Рис. 8. График изменения второго параметра с шагом обучения.</caption>
+    <tr><td><img src="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_8.png" alt="Рис. 8. График изменения второго параметра с шагом обучения." width="520"/></td></tr>
+</table> </center></p>
+
+<p>Видно, что обе модели быстро сходятся к хорошему результату. Модель без регуляризации показывает себя лучше потому, что в этой задаче не нужна регуляризация, а она слегка замедляет скорость обучения. Давайте взглянем поближе на процесс обучения:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Рис. 9. Процесс обучения линейной регрессии.</caption>
+    <tr><td><img src="/images/posts/2017-10-31-generative-modeling-with-deep-learning/graph_9.gif" alt="Рис. 9. Процесс обучения линейной регрессии." width="520"/></td></tr>
+</table> </center></p>
+
+<p>Видно, что обучаемое математическое ожидание $\eta$ постепенно сходится к аналитически вычисленному, при чем, чем оно ближе, тем медленнее сходится из-за все более слабого градиента функции потерь.</p>
+
+<h2>Другие задачи</h2>
+
+<p>В дополнение к изученным выше задачам классификации и регрессии есть и другие задачи так называемого обучения с учителем, в основном сводящиеся к отображению между точками и последовательностями: Object-to-Sequence, Sequence-to-Sequence, Sequence-to-Object. Так же есть и большой спектр классических задач обучения без учителя: кластеризация, заполнение пробелов в данных, и, наконец, явная или неявная аппроксимация распределений, которая и используется для генеративного моделирования. Именно о последнем классе задач будет идти речь в этом цикле статей.</p>
+
+<h2>Генеративные модели</h2>
+
+<p>В следующей главе мы посмотрим, что такое генеративные модели и чем они принципиально отличаются от рассмотренных в этой главе дискриминативных. Мы посмотрим на простейшие примеры генеративных моделей и попробуем обучить модель, генерирующую сэмплы из простого распределения данных.</p>
+
+<h2>Благодарности</h2>
+
+<p>Спасибо <a href="https://www.linkedin.com/in/olga-talanova-b319b761/">Olga Talanova</a> за ревью текста.
+Спасибо <a href="https://github.com/andrewtar">Andrei Tarashkevich</a> за помощь с версткой этой статьи в Jekyll.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/ru/posts/2018/02/05/generative-modeling-and-ai.html" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/ru/posts/2016/02/17/deep-learning-in-the-garage-return-of-smiles.html" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+    <footer>
+        <span>
+            &copy; <time datetime="2018-10-27 19:30:09 +0000">2018</time> You can find me on <a href="https://github.com/Monnoroch">GitHub</a>.
+        </span>
+    </footer>
+    <script src="/scripts/responsive.js" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']]
+            }
+        });
+    </script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</body>
+</html>

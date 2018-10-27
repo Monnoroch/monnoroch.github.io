@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Тестирование Android приложений &middot; 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/ru/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/ru/">
+                <h2 class="nav-title"></h2>
+            </a>
+            <ul>
+                <li><a href="/ru/about">О блоге</a></li>
+                <li><a href="/ru/">Все посты</a></li>
+            </ul>
+            
+                
+                    
+                        <a href="/posts/2018/03/28/advanced-android-testing.html">
+                            English
+                        </a>
+                    
+                    
+                    
+                
+            
+                
+            
+        </div>
+    </nav>
+    <main>
+        <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        Max Strakhov, Evgeny Aseev
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2018-03-28 08:00:00 +0000">March 28, 2018</time>
+    
+  </div>
+
+  <h1 class="post-title">Тестирование Android приложений</h1>
+  <div class="post-line"></div>
+
+  <p>Тестирование — одна из важнейших частей разработки качественных программных продуктов. Сегодня мы поговорим о некоторых методологиях и библиотеках, разработанных и используемых нашей командой для написания тестов Android приложений.</p>
+
+<p><center> <table class="image">
+    <caption align="bottom"></caption>
+    <tr><td><img src="/images/posts/2018-03-28-advanced-android-testing/logo.png" alt="" width="520"/></td></tr>
+</table> </center>
+Начнем с самых базовых вещей, потому более опытные разработчики могут перейти сразу к разделу об инструментах для UI тестирования. Для тех, кому хочется узнать или освежить базовые вещи — приятного чтения.</p>
+
+<h2>Создание первого теста</h2>
+
+<p>Создадим небольшой компонент, который и будем тестировать. Он парсит файл с JSON объектом, содержащим имя, и возвращает полученную строку:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepository</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">File</span> <span class="n">file</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">NameRepository</span><span class="o">(</span><span class="n">File</span> <span class="n">file</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">file</span> <span class="o">=</span> <span class="n">file</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">String</span> <span class="nf">getName</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Gson</span><span class="o">();</span>
+    <span class="n">User</span> <span class="n">user</span> <span class="o">=</span> <span class="n">gson</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">readFile</span><span class="o">(),</span> <span class="n">User</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+    <span class="k">return</span> <span class="n">user</span><span class="o">.</span><span class="na">name</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">String</span> <span class="nf">readFile</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="kt">byte</span><span class="o">[]</span> <span class="n">bytes</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[(</span><span class="kt">int</span><span class="o">)</span> <span class="n">file</span><span class="o">.</span><span class="na">length</span><span class="o">()];</span>
+    <span class="k">try</span> <span class="o">(</span><span class="n">FileInputStream</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileInputStream</span><span class="o">(</span><span class="n">file</span><span class="o">))</span> <span class="o">{</span>
+      <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">bytes</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">bytes</span><span class="o">,</span> <span class="n">Charset</span><span class="o">.</span><span class="na">defaultCharset</span><span class="o">());</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">User</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p>Тут и в дальнейшем я буду приводить сокращенную версию кода. Полную версию можно посмотреть в <a href="https://github.com/Monnoroch/android-testing">репозитории</a>. К каждому сниппету будет приложена ссылка на <a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/NameRepository.java">полный код</a>.</p>
+
+<p>Теперь напишем первый <a href="http://junit.org/junit4/javadoc/4.12/overview-summary.html">JUnit</a> тест. JUnit — это Java библиотека для написания тестов. Для того, чтобы JUnit знал, что метод является тестом, нужно добавить к нему аннотацию <code>@Test</code>. JUnit содержит в себе класс <code>Assert</code>, который позволяет сравнивать фактические значения с ожидаемыми и выводит ошибку, если значения не совпадают. Этот тест будет тестировать корректность нашего компонента, а именно чтения файла, парсинга JSON и получения верного поля:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepositoryTest</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">File</span> <span class="n">FILE</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;test_file&quot;</span><span class="o">);</span>
+
+  <span class="n">NameRepository</span> <span class="n">nameRepository</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NameRepository</span><span class="o">(</span><span class="n">FILE</span><span class="o">);</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_isSasha</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">PrintWriter</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PrintWriter</span><span class="o">(</span>
+        <span class="k">new</span> <span class="n">BufferedWriter</span><span class="o">(</span>
+            <span class="k">new</span> <span class="n">OutputStreamWriter</span><span class="o">(</span><span class="k">new</span> <span class="n">FileOutputStream</span><span class="o">(</span><span class="n">FILE</span><span class="o">),</span> <span class="n">UTF_8</span><span class="o">)),</span> <span class="kc">true</span><span class="o">);</span>
+    <span class="n">writer</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;{name : Sasha}&quot;</span><span class="o">);</span>
+    <span class="n">writer</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+
+    <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+    <span class="n">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="s">&quot;Sasha&quot;</span><span class="o">);</span>
+
+    <span class="n">FILE</span><span class="o">.</span><span class="na">delete</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_notMia</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">PrintWriter</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PrintWriter</span><span class="o">(</span>
+        <span class="k">new</span> <span class="n">BufferedWriter</span><span class="o">(</span>
+            <span class="k">new</span> <span class="n">OutputStreamWriter</span><span class="o">(</span><span class="k">new</span> <span class="n">FileOutputStream</span><span class="o">(</span><span class="n">FILE</span><span class="o">),</span> <span class="n">UTF_8</span><span class="o">)),</span> <span class="kc">true</span><span class="o">);</span>
+    <span class="n">writer</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;{name : Sasha}&quot;</span><span class="o">);</span>
+    <span class="n">writer</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+
+    <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+    <span class="n">Assert</span><span class="o">.</span><span class="na">assertNotEquals</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="s">&quot;Mia&quot;</span><span class="o">);</span>
+
+    <span class="n">FILE</span><span class="o">.</span><span class="na">delete</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/baseline/NameRepositoryTest.java">Полный код</a></center></p>
+
+<h2>Библиотеки для написания тестов</h2>
+
+<p>Тесты — это тоже код, который надо поддерживать. Более того, код тестов должен быть прост для понимания, чтобы его можно было верифицировать в уме. Потому есть смысл инвестировать в упрощение кода тестов, избавление от дублирования и повышение читабельности. Посмотрим на широко используемые библиотеки, которые помогут нам в этом деле.</p>
+
+<p>Чтобы не дублировать код подготовки в каждом тесте, существуют аннотации <code>@Before</code> и <code>@After</code>. Методы, помеченные аннотацией <code>@Before</code>, будут выполняться перед каждым тестом, а помеченные аннотацией <code>@After</code> — после каждого теста. Также есть аннотации <code>@BeforeClass</code> и <code>@AfterClass</code>, которые выполняются соответственно перед и после всех тестов в классе. Давайте переделаем наш тест, используя такие методы:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepositoryTest</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">File</span> <span class="n">FILE</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;test_file&quot;</span><span class="o">);</span>
+
+  <span class="n">NameRepository</span> <span class="n">nameRepository</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NameRepository</span><span class="o">(</span><span class="n">FILE</span><span class="o">);</span>
+
+  <span class="nd">@Before</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">PrintWriter</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PrintWriter</span><span class="o">(</span>
+        <span class="k">new</span> <span class="n">BufferedWriter</span><span class="o">(</span>
+            <span class="k">new</span> <span class="n">OutputStreamWriter</span><span class="o">(</span><span class="k">new</span> <span class="n">FileOutputStream</span><span class="o">(</span><span class="n">FILE</span><span class="o">),</span> <span class="n">UTF_8</span><span class="o">)),</span> <span class="kc">true</span><span class="o">);</span>
+    <span class="n">writer</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;{name : Sasha}&quot;</span><span class="o">);</span>
+    <span class="n">writer</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="nd">@After</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">tearDown</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">FILE</span><span class="o">.</span><span class="na">delete</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_isSasha</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+    <span class="n">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="s">&quot;Sasha&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_notMia</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+    <span class="n">Assert</span><span class="o">.</span><span class="na">assertNotEquals</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="s">&quot;Mia&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/beforeafter/NameRepositoryTest.java">Полный код</a></center></p>
+
+<p>Мы смогли убрать дублирование кода настройки каждого теста. Однако, много разных классов с тестами могут потребовать создания файла, и это дублирование тоже хотелось бы убрать. Для этого есть библиотека тестовых правил (<a href="https://developer.android.com/reference/android/support/test/rule/package-summary.html">TestRule</a>). Тестовое правило выполняет функцию схожую с <code>@Before</code> и <code>@After</code>. В методе apply() этого класса мы можем выполнить нужные нам действия до и после выполнения каждого или всех тестов. Помимо уменьшения дублирования кода, преимущество такого метода заключается еще и в том, что код выносится из класса тестов, что уменьшает количество кода в тесте и облегчает его чтение. Напишем правило для создания файла:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CreateFileRule</span> <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">File</span> <span class="n">file</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">text</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">CreateFileRule</span><span class="o">(</span><span class="n">File</span> <span class="n">file</span><span class="o">,</span> <span class="n">String</span> <span class="n">text</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">file</span> <span class="o">=</span> <span class="n">file</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="kd">final</span> <span class="n">Statement</span> <span class="n">s</span><span class="o">,</span> <span class="n">Description</span> <span class="n">d</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">Statement</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">evaluate</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+        <span class="n">PrintWriter</span> <span class="n">writer</span> <span class="o">=</span>
+            <span class="k">new</span> <span class="n">PrintWriter</span><span class="o">(</span>
+                <span class="k">new</span> <span class="n">BufferedWriter</span><span class="o">(</span>
+                    <span class="k">new</span> <span class="n">OutputStreamWriter</span><span class="o">(</span>
+                        <span class="k">new</span> <span class="n">FileOutputStream</span><span class="o">(</span><span class="n">FILE</span><span class="o">),</span> <span class="n">UTF_8</span><span class="o">)),</span> <span class="kc">true</span><span class="o">);</span>
+        <span class="n">writer</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">text</span><span class="o">);</span>
+        <span class="n">writer</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+        <span class="k">try</span> <span class="o">{</span>
+          <span class="n">s</span><span class="o">.</span><span class="na">evaluate</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+          <span class="n">file</span><span class="o">.</span><span class="na">delete</span><span class="o">();</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/rules/CreateFileRule.java">Полный код</a></center></p>
+
+<p>Используем это правило в нашем тесте. Для того, чтобы действия <code>TestRule</code> исполнялись для каждого теста, нужно пометить <code>TestRule</code> аннотацией <code>@Rule</code>.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepositoryTest</span> <span class="o">{</span>
+  <span class="kd">static</span> <span class="kd">final</span> <span class="n">File</span> <span class="n">FILE</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;test_file&quot;</span><span class="o">);</span>
+
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">CreateFileRule</span> <span class="n">fileRule</span> <span class="o">=</span>
+    <span class="k">new</span> <span class="n">CreateFileRule</span><span class="o">(</span><span class="n">FILE</span><span class="o">,</span> <span class="s">&quot;{name : Sasha}&quot;</span><span class="o">);</span>
+
+  <span class="n">NameRepository</span> <span class="n">nameRepository</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NameRepository</span><span class="o">(</span><span class="k">new</span> <span class="n">FileReader</span><span class="o">(</span><span class="n">FILE</span><span class="o">));</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_isSasha</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+    <span class="n">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="s">&quot;Sasha&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/filerule/NameRepositoryTest.java">Полный код</a></center></p>
+
+<p>Если правило отметить аннотацией <code>@ClassRule</code>, то действия будут вызываться не перед каждым тестом, а один раз перед всеми тестами в классе, аналогично аннотациям <code>@BeforeClass</code> и <code>@AfterClass</code>.</p>
+
+<p>Когда в тестах используется несколько <code>TestRule</code>, может понадобиться, чтобы они запускались в определенном порядке, для этого существует <a href="http://junit.org/junit4/javadoc/4.12/org/junit/rules/RuleChain.html">RuleChain</a> с помощью которого можно определить порядок запуска наших <code>TestRule</code>. Создадим правило, которое должно создать папку до того, как будет создан файл:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CreateDirRule</span> <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">File</span> <span class="n">dir</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">CreateDirRule</span><span class="o">(</span><span class="n">File</span> <span class="n">dir</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">dir</span> <span class="o">=</span> <span class="n">dir</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="kd">final</span> <span class="n">Statement</span> <span class="n">s</span><span class="o">,</span> <span class="n">Description</span> <span class="n">d</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">Statement</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">evaluate</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+        <span class="n">dir</span><span class="o">.</span><span class="na">mkdir</span><span class="o">();</span>
+        <span class="k">try</span> <span class="o">{</span>
+          <span class="n">s</span><span class="o">.</span><span class="na">evaluate</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+          <span class="n">dir</span><span class="o">.</span><span class="na">delete</span><span class="o">();</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/rules/CreateDirRule.java">Полный код</a></center></p>
+
+<p>С этим правилом класс с тестом будет выглядеть следующим образом:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepositoryTest</span> <span class="o">{</span>
+  <span class="kd">static</span> <span class="kd">final</span> <span class="n">File</span> <span class="n">DIR</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;test_dir&quot;</span><span class="o">);</span>
+  <span class="kd">static</span> <span class="kd">final</span> <span class="n">File</span> <span class="n">FILE</span> <span class="o">=</span> <span class="n">Paths</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">DIR</span><span class="o">.</span><span class="na">toString</span><span class="o">(),</span> <span class="s">&quot;test_file&quot;</span><span class="o">).</span><span class="na">toFile</span><span class="o">();</span>
+
+  <span class="nd">@Rule</span>
+  <span class="kd">public</span> <span class="kd">final</span> <span class="n">RuleChain</span> <span class="n">chain</span> <span class="o">=</span> <span class="n">RuleChain</span>
+    <span class="o">.</span><span class="na">outerRule</span><span class="o">(</span><span class="k">new</span> <span class="n">CreateDirRule</span><span class="o">(</span><span class="n">DIR</span><span class="o">))</span>
+    <span class="o">.</span><span class="na">around</span><span class="o">(</span><span class="k">new</span> <span class="n">CreateFileRule</span><span class="o">(</span><span class="n">FILE</span><span class="o">,</span> <span class="s">&quot;{name : Sasha}&quot;</span><span class="o">));</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_isSasha</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+    <span class="n">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="s">&quot;Sasha&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/rulechain/NameRepositoryTest.java">Полный код</a></center></p>
+
+<p>Теперь в каждом тесте директория будет создаваться перед созданием файла и удаляться после удаления файла.</p>
+
+<p><a href="https://github.com/google/truth">Google Truth</a> — это библиотека для улучшения читабельности кода тестов. Содержит методы assert (аналогично <a href="http://junit.sourceforge.net/javadoc/org/junit/Assert.html">JUnit Assert</a>), но более читабельные для человека, а также включает гораздо больше вариантов для проверки параметров. Так выглядит предыдущий тест с использование Truth:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_isSasha</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+  <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+  <span class="n">assertThat</span><span class="o">(</span><span class="n">name</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="s">&quot;Sasha&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="nd">@Test</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_notMia</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+  <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+  <span class="n">assertThat</span><span class="o">(</span><span class="n">name</span><span class="o">).</span><span class="na">isNotEqualTo</span><span class="o">(</span><span class="s">&quot;Mia&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/truth/NameRepositoryTest.java">Полный код</a></center></p>
+
+<p>Видно, что код читается почти как текст на разговорном английском языке.</p>
+
+<p>Наш компонент делает две разных работы: читает файл и парсит его. Чтобы придерживаться принципа единственной ответственности, давайте выделим логику чтения файла в отдельный компонент:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">FileReader</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">File</span> <span class="n">file</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">FileReader</span><span class="o">(</span><span class="n">File</span> <span class="n">file</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">file</span> <span class="o">=</span> <span class="n">file</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">String</span> <span class="nf">readFile</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="kt">byte</span><span class="o">[]</span> <span class="n">bytes</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[(</span><span class="kt">int</span><span class="o">)</span> <span class="n">file</span><span class="o">.</span><span class="na">length</span><span class="o">()];</span>
+    <span class="k">try</span> <span class="o">(</span><span class="n">FileInputStream</span> <span class="n">in</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileInputStream</span><span class="o">(</span><span class="n">file</span><span class="o">))</span> <span class="o">{</span>
+      <span class="n">in</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">bytes</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">bytes</span><span class="o">,</span> <span class="n">Charset</span><span class="o">.</span><span class="na">defaultCharset</span><span class="o">());</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/common/FileReader.java">Полный код</a></center></p>
+
+<p>Сейчас мы хотим тестировать именно <code>NameRepository</code>, а фактически тестируем и чтение файла в <code>FileReader</code>. Чтобы этого избежать и тем самым повысить изоляцию, надежность и скорость выполнения теста, мы можем заменить реальный <code>FileReader</code> на его мок.</p>
+
+<p><a href="http://site.mockito.org">Mockito</a> — библиотека для для создания заглушек (моков) вместо реальных объектов для использования их в тестах. Некоторые действия, которые можно выполнять с помощью Mockito:
+создавать заглушки для классов и интерфейсов;
+проверять вызовы метода и значения передаваемые этому методу;
+подключение к реальному объекту «шпиона» <code>spy</code> для контроля вызова методов.</p>
+
+<p>Создадим мок <code>FileReader</code> и настроим его так, чтобы метод <code>readFile()</code> возвращал нужную нам строку:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepositoryTest</span> <span class="o">{</span>
+  <span class="n">FileReader</span> <span class="n">fileReader</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">FileReader</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+  <span class="n">NameRepository</span> <span class="n">nameRepository</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NameRepository</span><span class="o">(</span><span class="n">fileReader</span><span class="o">);</span>
+
+  <span class="nd">@Before</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">fileReader</span><span class="o">.</span><span class="na">readFile</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="s">&quot;{name : Sasha}&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_isSasha</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+    <span class="n">assertThat</span><span class="o">(</span><span class="n">name</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="s">&quot;Sasha&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/mockito/NameRepositoryTest.java">Полный код</a></center></p>
+
+<p>Теперь не происходит никакого чтения файла. Вместо этого, мок отдает настроенное в тесте значение.</p>
+
+<p>Использование моков имеет свои преимущества:</p>
+
+<ul>
+<li>тесты проверяют только тестируемый класс на ошибки, ошибки других классов на проверку тестируемого класса никак не влияют</li>
+<li>иногда более короткий и читабельный код</li>
+<li>есть возможность проверять вызовы метода и передаваемые значения методам мокированного объекта</li>
+</ul>
+
+<p>и недостатки:</p>
+
+<ul>
+<li>по умолчанию ненастроенные методы возвращают null, потому все используемые методы нужно настраивать явно.</li>
+<li>если реальный объект имеет состояние, то при каждом его предполагаемом изменении нужно перенастраивать его мок, из-за чего код тестов иногда раздувается.</li>
+</ul>
+
+<p>Существует более простой и удобный способ создания моков — использовать специальную аннотацию <code>@Mock</code>:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@Mock</span> <span class="n">File</span> <span class="n">file</span><span class="o">;</span>
+</code></pre></div>
+<p>Есть три способа инициализировать такие моки:</p>
+
+<ol>
+<li>Вызвать <a href="https://static.javadoc.io/org.mockito/mockito-core/2.2.28/org/mockito/MockitoAnnotations.html#initMocks(java.lang.Object)">MockitoAnnotations.initMocks()</a>:</li>
+</ol>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@Before</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="o">{</span>
+  <span class="n">MockitoAnnotations</span><span class="o">.</span><span class="na">initMocks</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+<ol>
+<li>Использовать <a href="https://static.javadoc.io/org.mockito/mockito-core/2.2.28/org/mockito/junit/MockitoJUnitRunner.html">MockitoJUnitRunner</a> для запуска тестов:</li>
+</ol>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">MockitoJUnitRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+</code></pre></div>
+<ol>
+<li>Добавить в тест правило <a href="https://static.javadoc.io/org.mockito/mockito-core/2.6.5/org/mockito/junit/MockitoRule.html">MockitoRule</a>:</li>
+</ol>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">MockitoRule</span> <span class="n">rule</span> <span class="o">=</span> <span class="n">MockitoJUnit</span><span class="o">.</span><span class="na">rule</span><span class="o">();</span>
+</code></pre></div>
+<p>Второй вариант максимально декларативен и компактен, но требует использования специального раннера тестов, что не всегда удобно. Последний вариант лишен этого недостатка и более декларативен, чем использование метода <code>initMocks()</code>.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">MockitoJUnitRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepositoryTest</span> <span class="o">{</span>
+  <span class="nd">@Mock</span> <span class="n">FileReader</span> <span class="n">fileReader</span><span class="o">;</span>
+  <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">;</span>
+
+  <span class="nd">@Before</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">fileReader</span><span class="o">.</span><span class="na">readFile</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="s">&quot;{name : Sasha}&quot;</span><span class="o">);</span>
+    <span class="n">nameRepository</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NameRepository</span><span class="o">(</span><span class="n">fileReader</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName_isSasha</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+    <span class="n">assertThat</span><span class="o">(</span><span class="n">name</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="s">&quot;Sasha&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/mockitorunner/NameRepositoryTest.java">Полный код</a></center></p>
+
+<h2>Host Java VM vs Android Java VM</h2>
+
+<p>Android тесты можно поделить на два типа: те, что можно запускать на обычной Java VM, и те, что необходимо запускать на Android Java VM. Давайте посмотрим на оба типа тестов.</p>
+
+<h3>Тесты, запускаемые на обычной Java VM</h3>
+
+<p>Тесты для кода, не требующего работы компонентов Android API, для работы которых нужен Android-эмулятор или реальное устройство, можно запускать прямо на вашем компьютере и на любой Java-машине. Преимущественно это юнит-тесты бизнес-логики, которые тестируют изолированно отдельно взятый класс. Гораздо реже пишутся интеграционные тесты, так как далеко не всегда есть возможность создать реальные объекты классов, с которыми взаимодействует тестируемый класс.</p>
+
+<p>Чтобы написать класс с Host Java тестами нужно, чтобы java файл имел путь <code>${moduleName}/src/test/java/...</code>. Также с помощью <code>@RunWith</code> аннотации указать <code>Runner</code>, который отвечает за запуск тестов, корректный вызов и обработку всех методов:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">MockitoJUnitRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestClass</span> <span class="o">{...}</span>
+</code></pre></div>
+<p>Использование этих тестов имеет множество преимуществ:</p>
+
+<ul>
+<li>не требуют запуска эмулятора или реального устройства, особенно это важно при прохождении тестов в <a href="https://en.wikipedia.org/wiki/Continuous_integration">Continuous integration</a>, где эмулятор может работать очень медленно и нет реального устройства</li>
+<li>очень быстро проходят, так как для этого не нужно запускать приложение, отображать UI и т.д.</li>
+<li>стабильны, так как нет проблем, связанных с тем, что эмулятор может зависнуть и т.д.</li>
+</ul>
+
+<p>с другой стороны, этими тестами:</p>
+
+<ul>
+<li>нельзя в полной мере протестировать взаимодействие классов с операционной системой</li>
+<li>в частности, нельзя протестировать нажатия на UI элементы и жесты</li>
+</ul>
+
+<p>Для того, чтобы была возможность использовать Android API классы в Host Java тестах, существует библиотека <a href="http://robolectric.org/getting-started/">Robolectric</a>, которая эмулирует среду Android и дает доступ к ее основным функциям. Однако, тестирование классов Android с Roboelectric часто работает нестабильно: нужно время, пока Robolectric будет поддерживать последнее API Android, существуют проблемы с получением ресурсов и т.д. Поэтому реальные классы почти не используются, а используются их моки для юнит-тестирования.</p>
+
+<p>Для запуска тестов с помощью Roboelectric нужно установить кастомный <a href="http://junit.sourceforge.net/junit3.8.1/javadoc/junit/textui/TestRunner.html">TestRunner</a>. В нем можно настроить версию SDK (самая последняя стабильная версия — 23), обозначить основной класс <code>Application</code> и другие параметры для эмулированной среды Android.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainApplication</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/robolectric/MainApplication.java">Полный код</a></center></p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">RobolectricTestRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="nd">@Config</span><span class="o">(</span><span class="n">sdk</span> <span class="o">=</span> <span class="mi">21</span><span class="o">,</span> <span class="n">application</span> <span class="o">=</span> <span class="n">MainApplication</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainApplicationTest</span> <span class="o">{</span>
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">packageName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">assertThat</span><span class="o">(</span><span class="n">RuntimeEnvironment</span><span class="o">.</span><span class="na">application</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">isInstanceOf</span><span class="o">(</span><span class="n">MainApplication</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/MainApplicationTest.java">Полный код</a></center></p>
+
+<h3>Тесты, запускаемые на Android Java VM</h3>
+
+<p>Для инструментальных тестов наличие устройства или эмулятора обязательно, так как мы будем тестировать нажатие кнопок, ввод текста, и другие действия.</p>
+
+<p>Чтобы написать тест для Android Java VM нужно положить java файл по пути <code>${moduleName}/src/androidTest/java/...</code>, а также с помощью <code>@RunWith</code> аннотации указать <code>AndroidJUnit4</code>, который позволит запускать тесты на устройстве Android.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestClass</span> <span class="o">{...}</span>
+</code></pre></div>
+<h2>UI тесты</h2>
+
+<p>Для тестирования UI используется фреймворк <a href="https://developer.android.com/training/testing/ui-testing/espresso-testing.html">Espresso</a>, который предоставляет API для тестирования пользовательского интерфейса программы. В Espresso тесты работают в бэкграунд потоке, а взаимодействие с UI элементами в потоке UI. Espresso имеет несколько основных классов для тестирования:</p>
+
+<ul>
+<li>Espresso — основной класс. Содержит в себе статические методы, такие как нажатия на системные кнопки (Back, Home), вызвать/спрятать клавиатуру, открыть меню, обратится к компоненту.</li>
+<li>ViewMatchers — позволяет найти компонент на экране в текущей иерархии.</li>
+<li>ViewActions — позволяет взаимодействовать с компонентом (click, longClick, doubleClick, swipe, scroll и т.д.).</li>
+<li>ViewAssertions — позволяет проверить состояние компонента.</li>
+</ul>
+
+<h3>Первый UI тест</h3>
+
+<p>Напишем простейшее Android-приложение, которое и будем тестировать:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivity</span> <span class="kd">extends</span> <span class="n">AppCompatActivity</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">(</span><span class="n">savedInstanceState</span><span class="o">);</span>
+    <span class="n">setContentView</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">layout</span><span class="o">.</span><span class="na">main_activity</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/MainActivity.java">Полный код</a></center></p>
+
+<p>Протестируем наше приложение. При тестировании UI прежде всего нужно запустить Activity. Для этого существует <a href="https://developer.android.com/reference/android/support/test/rule/ActivityTestRule.html">ActivityTestRule</a>, которое запускает Activity перед каждым тестом и закрывает после:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@Rule</span> <span class="kd">public</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">MainActivity</span><span class="o">&gt;</span> <span class="n">activityTestRule</span> <span class="o">=</span>
+    <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;&gt;(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</code></pre></div>
+<p>Напишем простой тест, проверяющий, что элемент с id <code>R.id.container</code> показан на экране:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivityTest</span> <span class="o">{</span>
+  <span class="nd">@Rule</span>
+  <span class="kd">public</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">MainActivity</span><span class="o">&gt;</span> <span class="n">activityTestRule</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;&gt;(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">checkContainerIsDisplayed</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">onView</span><span class="o">(</span><span class="n">ViewMatchers</span><span class="o">.</span><span class="na">withId</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">container</span><span class="o">))</span>
+        <span class="o">.</span><span class="na">check</span><span class="o">(</span><span class="n">matches</span><span class="o">(</span><span class="n">isDisplayed</span><span class="o">()));</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/activity/activityrule/MainActivityTest.java">Полный код</a></center></p>
+
+<h2>Разблокировка и включение экрана</h2>
+
+<p>Эмулятор на слабых или загруженных машинах может работать медленно. Поэтому между запуском эмулятора и окончанием билда с установкой приложения на эмулятор может пройти достаточно времени для того, чтобы экран заблокировался от бездействия. Таким образом тест может быть запущен при заблокированном экране, что вызовет ошибку <code>java.lang.RuntimeException: Could not launch activity within 45 seconds</code>. Поэтому перед запуском Activity нужно разблокировать и включить экран. Раз это нужно делать в каждом UI тесте, для избежания дублирования кода создадим правило, которое будет разблокировать и включать экран перед тестом:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">class</span> <span class="nc">UnlockScreenRule</span><span class="o">&lt;</span><span class="n">A</span> <span class="kd">extends</span> <span class="n">AppCompatActivity</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">;</span>
+
+  <span class="n">UnlockScreenRule</span><span class="o">(</span><span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">activityRule</span> <span class="o">=</span> <span class="n">activityRule</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Statement</span> <span class="n">statement</span><span class="o">,</span> <span class="n">Description</span> <span class="n">description</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">Statement</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">evaluate</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+        <span class="n">activityRule</span><span class="o">.</span><span class="na">runOnUiThread</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="n">activityRule</span>
+            <span class="o">.</span><span class="na">getActivity</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">getWindow</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">addFlags</span><span class="o">(</span>
+                  <span class="n">WindowManager</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">.</span><span class="na">FLAG_SHOW_WHEN_LOCKED</span>
+                <span class="o">|</span> <span class="n">WindowManager</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">.</span><span class="na">FLAG_DISMISS_KEYGUARD</span>
+                <span class="o">|</span> <span class="n">WindowManager</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">.</span><span class="na">FLAG_KEEP_SCREEN_ON</span>
+                <span class="o">|</span> <span class="n">WindowManager</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">.</span><span class="na">FLAG_TURN_SCREEN_ON</span>
+                <span class="o">|</span> <span class="n">WindowManager</span><span class="o">.</span><span class="na">LayoutParams</span><span class="o">.</span><span class="na">FLAG_ALLOW_LOCK_WHILE_SCREEN_ON</span><span class="o">));</span>
+        <span class="n">statement</span><span class="o">.</span><span class="na">evaluate</span><span class="o">();</span>
+      <span class="o">}</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/rules/UnlockScreenRule.java">Полный код</a></center></p>
+
+<p>Напишем кастомное <code>ActivityTestRule</code>, которое разблокирует экран эмулятора и запустит активити перед запуском тестов:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span> <span class="kd">extends</span> <span class="n">AppCompatActivity</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">test</span><span class="o">.</span><span class="na">rule</span><span class="o">.</span><span class="na">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">RuleChain</span> <span class="n">ruleChain</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">ActivityTestRule</span><span class="o">(</span><span class="n">Class</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityClass</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">activityRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;&gt;(</span><span class="n">activityClass</span><span class="o">,</span> <span class="kc">true</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+    <span class="n">ruleChain</span> <span class="o">=</span> <span class="n">RuleChain</span>
+      <span class="o">.</span><span class="na">outerRule</span><span class="o">(</span><span class="n">activityRule</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">around</span><span class="o">(</span><span class="k">new</span> <span class="n">UnlockScreenRule</span><span class="o">(</span><span class="n">activityRule</span><span class="o">));</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">android</span><span class="o">.</span><span class="na">support</span><span class="o">.</span><span class="na">test</span><span class="o">.</span><span class="na">rule</span><span class="o">.</span><span class="na">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="nf">getActivityRule</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">activityRule</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">runOnUiThread</span><span class="o">(</span><span class="n">Runnable</span> <span class="n">runnable</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+    <span class="n">activityRule</span><span class="o">.</span><span class="na">runOnUiThread</span><span class="o">(</span><span class="n">runnable</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">A</span> <span class="nf">getActivity</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">activityRule</span><span class="o">.</span><span class="na">getActivity</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Statement</span> <span class="n">statement</span><span class="o">,</span> <span class="n">Description</span> <span class="n">description</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">ruleChain</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">statement</span><span class="o">,</span> <span class="n">description</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/rules/ActivityTestRule.java">Полный код</a></center></p>
+
+<p>Используя это правило вместо стандартного можно сильно снизить число случайных падений UI тестов в CI.</p>
+
+<h2>Тестирование фрагментов</h2>
+
+<p>Обычно верстка и логика UI приложения не кладется вся в активити, а разбивается на окна, для каждого из которых создается фрагмент. Давайте создадим простой фрагмент для вывода на экран имени с помощью <code>NameRepository</code>:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragment</span> <span class="kd">extends</span> <span class="n">Fragment</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="n">TextView</span> <span class="n">textView</span><span class="o">;</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">View</span> <span class="nf">onCreateView</span><span class="o">(</span>
+      <span class="n">LayoutInflater</span> <span class="n">inflater</span><span class="o">,</span> <span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TextView</span><span class="o">(</span><span class="n">getActivity</span><span class="o">());</span>
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">createNameRepository</span><span class="o">().</span><span class="na">getName</span><span class="o">());</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">exception</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="n">exception</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">textView</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="n">NameRepository</span> <span class="nf">createNameRepository</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">NameRepository</span><span class="o">(</span>
+        <span class="k">new</span> <span class="n">FileReader</span><span class="o">(</span>
+            <span class="k">new</span> <span class="n">File</span><span class="o">(</span>
+                <span class="n">getContext</span><span class="o">().</span><span class="na">getFilesDir</span><span class="o">().</span><span class="na">getAbsoluteFile</span><span class="o">()</span>
+                    <span class="o">+</span> <span class="n">File</span><span class="o">.</span><span class="na">separator</span>
+                    <span class="o">+</span> <span class="s">&quot;test_file&quot;</span><span class="o">)));</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onDestroyView</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onDestroyView</span><span class="o">();</span>
+    <span class="n">textView</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/UserFragment.java">Полный код</a></center></p>
+
+<p>При открытии фрагмента UI может зависнуть на некоторое время, а если используются анимации переходов между фрагментами, тест может начаться до появления фрагмента. Поэтому нужно не просто открыть фрагмент, а дождаться, когда он будет запущен. Для ожидания результата выполнения действий отлично подходит библиотека <a href="https://github.com/awaitility/awaitility">Awaitility</a>, которая имеет очень простой и понятный синтаксис. Напишем правило, запускающее фрагмент и ожидающее его запуска с помощью этой библиотеки:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">class</span> <span class="nc">OpenFragmentRule</span><span class="o">&lt;</span><span class="n">A</span> <span class="kd">extends</span> <span class="n">AppCompatActivity</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">Fragment</span> <span class="n">fragment</span><span class="o">;</span>
+
+  <span class="n">OpenFragmentRule</span><span class="o">(</span><span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">,</span> <span class="n">Fragment</span> <span class="n">fragment</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">activityRule</span> <span class="o">=</span> <span class="n">activityRule</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">fragment</span> <span class="o">=</span> <span class="n">fragment</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Statement</span> <span class="n">statement</span><span class="o">,</span> <span class="n">Description</span> <span class="n">description</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">Statement</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">evaluate</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+        <span class="n">openFragment</span><span class="o">(</span><span class="n">fragment</span><span class="o">);</span>
+        <span class="n">await</span><span class="o">().</span><span class="na">atMost</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">).</span><span class="na">until</span><span class="o">(</span><span class="n">fragment</span><span class="o">::</span><span class="n">isResumed</span><span class="o">);</span>
+        <span class="n">statement</span><span class="o">.</span><span class="na">evaluate</span><span class="o">();</span>
+      <span class="o">}</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/rules/OpenFragmentRule.java">Полный код</a></center></p>
+
+<p>В данном случае выражение означает, что если в течении пяти секунд фрагмент не запустится, то тест не будет пройден. Нужно отметить, что как только фрагмент запустится, тест сразу же продолжит выполнение и не будет ждать все пять секунд.</p>
+
+<p>Аналогично правилу, которое запускает активити, логично создать правило, которое запускает фрагмент:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">FragmentTestRule</span><span class="o">&lt;</span><span class="n">A</span> <span class="kd">extends</span> <span class="n">AppCompatActivity</span><span class="o">,</span> <span class="n">F</span> <span class="kd">extends</span> <span class="n">Fragment</span><span class="o">&gt;</span>
+    <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">F</span> <span class="n">fragment</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">RuleChain</span> <span class="n">ruleChain</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">FragmentTestRule</span><span class="o">(</span><span class="n">Class</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityClass</span><span class="o">,</span> <span class="n">F</span> <span class="n">fragment</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">fragment</span> <span class="o">=</span> <span class="n">fragment</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">activityRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;&gt;(</span><span class="n">activityClass</span><span class="o">);</span>
+    <span class="n">ruleChain</span> <span class="o">=</span> <span class="n">RuleChain</span>
+      <span class="o">.</span><span class="na">outerRule</span><span class="o">(</span><span class="n">activityRule</span><span class="o">)</span>
+      <span class="o">.</span><span class="na">around</span><span class="o">(</span><span class="k">new</span> <span class="n">OpenFragmentRule</span><span class="o">&lt;&gt;(</span><span class="n">activityRule</span><span class="o">,</span> <span class="n">fragment</span><span class="o">));</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="nf">getActivityRule</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">activityRule</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">F</span> <span class="nf">getFragment</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">fragment</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">runOnUiThread</span><span class="o">(</span><span class="n">Runnable</span> <span class="n">runnable</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+    <span class="n">activityRule</span><span class="o">.</span><span class="na">runOnUiThread</span><span class="o">(</span><span class="n">runnable</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">A</span> <span class="nf">getActivity</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">activityRule</span><span class="o">.</span><span class="na">getActivity</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Statement</span> <span class="n">statement</span><span class="o">,</span> <span class="n">Description</span> <span class="n">description</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">ruleChain</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">statement</span><span class="o">,</span> <span class="n">description</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/rules/FragmentTestRule.java">Полный код</a></center></p>
+
+<p>Тест фрагмента с использованием этого правила будет выглядеть следующим образом:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragmentTest</span> <span class="o">{</span>
+  <span class="nd">@Rule</span>
+  <span class="kd">public</span> <span class="kd">final</span> <span class="n">RuleChain</span> <span class="n">rules</span> <span class="o">=</span> <span class="n">RuleChain</span>
+    <span class="o">.</span><span class="na">outerRule</span><span class="o">(</span><span class="k">new</span> <span class="n">CreateFileRule</span><span class="o">(</span><span class="n">getTestFile</span><span class="o">(),</span> <span class="s">&quot;{name : Sasha}&quot;</span><span class="o">))</span>
+    <span class="o">.</span><span class="na">around</span><span class="o">(</span><span class="k">new</span> <span class="n">FragmentTestRule</span><span class="o">&lt;&gt;(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">UserFragment</span><span class="o">()));</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">nameDisplayed</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">onView</span><span class="o">(</span><span class="n">withText</span><span class="o">(</span><span class="s">&quot;Sasha&quot;</span><span class="o">)).</span><span class="na">check</span><span class="o">(</span><span class="n">matches</span><span class="o">(</span><span class="n">isDisplayed</span><span class="o">()));</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="n">File</span> <span class="nf">getTestFile</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span>
+        <span class="n">InstrumentationRegistry</span><span class="o">.</span><span class="na">getTargetContext</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">getFilesDir</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">getAbsoluteFile</span><span class="o">()</span> <span class="o">+</span> <span class="n">File</span><span class="o">.</span><span class="na">separator</span> <span class="o">+</span> <span class="s">&quot;test_file&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/user/UserFragmentTest.java">Полный код</a></center></p>
+
+<h2>Асинхронная загрузка данных во фрагментах</h2>
+
+<p>Так как операции с диском, а именно получение имени из файла, может выполняться сравнительно долго, то следует эту операцию выполнять асинхронно. Для асинхронного получения имени из файла используем библиотеку <a href="https://github.com/ReactiveX/RxJava">RxJava</a>. Можно уверенно сказать, что RxJava сейчас используется в большинстве Android приложений. Практически каждая задача, которую нужно выполнить асинхронно, выполняется с помощью RxJava, потому что это пожалуй одна из самых удобных и понятных библиотек для асинхронного выполнения кода.</p>
+
+<p>Изменим наш репозиторий так, чтобы он работал асинхронно:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepository</span> <span class="o">{</span>
+  <span class="o">...</span>
+
+  <span class="kd">public</span> <span class="n">Single</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">Single</span><span class="o">.</span><span class="na">create</span><span class="o">(</span>
+        <span class="n">emitter</span> <span class="o">-&gt;</span> <span class="o">{</span>
+          <span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Gson</span><span class="o">();</span>
+          <span class="n">emitter</span><span class="o">.</span><span class="na">onSuccess</span><span class="o">(</span>
+              <span class="n">gson</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">fileReader</span><span class="o">.</span><span class="na">readFile</span><span class="o">(),</span> <span class="n">User</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">getName</span><span class="o">());</span>
+        <span class="o">});</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/rx/NameRepository.java">Полный код</a></center></p>
+
+<p>Для тестирования RX-кода существует специальный класс <code>TestObserver</code>, который автоматически подпишется на <code>Observable</code> и мгновенно получит результат. Тест репозитория будет выглядеть следующим образом:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">MockitoJUnitRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepositoryTest</span> <span class="o">{</span>
+ <span class="o">...</span>
+
+ <span class="nd">@Test</span>
+ <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span>
+   <span class="n">TestObserver</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">observer</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">().</span><span class="na">test</span><span class="o">();</span>
+   <span class="n">observer</span><span class="o">.</span><span class="na">assertValue</span><span class="o">(</span><span class="s">&quot;Sasha&quot;</span><span class="o">);</span>
+ <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/rx/NameRepositoryTest.java">Полный код</a></center></p>
+
+<p>Обновим наш фрагмент, используя новый реактивный репозиторий:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragment</span> <span class="kd">extends</span> <span class="n">Fragment</span> <span class="o">{</span>
+  <span class="o">...</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">View</span> <span class="nf">onCreateView</span><span class="o">(</span>
+      <span class="n">LayoutInflater</span> <span class="n">inflater</span><span class="o">,</span> <span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TextView</span><span class="o">(</span><span class="n">getActivity</span><span class="o">());</span>
+    <span class="n">createNameRepository</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">getName</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">subscribeOn</span><span class="o">(</span><span class="n">Schedulers</span><span class="o">.</span><span class="na">io</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span><span class="n">name</span> <span class="o">-&gt;</span> <span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">name</span><span class="o">));</span>
+    <span class="k">return</span> <span class="n">textView</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/awaitility/UserFragment.java">Полный код</a></center></p>
+
+<p>Так как теперь имя получается асинхронно, то для проверки результата работы нужно дождаться завершения асинхронного действия с помощью Awaitility:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragmentTest</span> <span class="o">{</span>
+  <span class="o">...</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">nameDisplayed</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">await</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">atMost</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">ignoreExceptions</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">untilAsserted</span><span class="o">(</span>
+            <span class="o">()</span> <span class="o">-&gt;</span>
+                <span class="n">onView</span><span class="o">(</span><span class="n">ViewMatchers</span><span class="o">.</span><span class="na">withText</span><span class="o">(</span><span class="s">&quot;Sasha&quot;</span><span class="o">))</span>
+                    <span class="o">.</span><span class="na">check</span><span class="o">(</span><span class="n">matches</span><span class="o">(</span><span class="n">isDisplayed</span><span class="o">())));</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/user/awaitility/UserFragmentTest.java">Полный код</a></center></p>
+
+<p>Когда во фрагменте или активити выполняются асинхронные действия, в данном случае — чтение имени из файла, нужно иметь ввиду, что фрагмент может быть закрыт пользователем до того, как асинхронное действие выполнится. В текущей версии фрагмента допущена ошибка, так как если при выполнении асинхронной операции фрагмент будет уже закрыт, то <code>textView</code> будет уже удален и равен <code>null</code>. Чтобы не допустить краша приложения с <code>NullPointerException</code> при доступе к <code>textView</code> в <code>subscribe()</code>, остановим асинхронное действие при закрытии фрагмента:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragment</span> <span class="kd">extends</span> <span class="n">Fragment</span> <span class="o">{</span>
+
+  <span class="kd">private</span> <span class="n">TextView</span> <span class="n">textView</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">Disposable</span> <span class="n">disposable</span><span class="o">;</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">View</span> <span class="nf">onCreateView</span><span class="o">(</span>
+      <span class="n">LayoutInflater</span> <span class="n">inflater</span><span class="o">,</span> <span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TextView</span><span class="o">(</span><span class="n">getActivity</span><span class="o">());</span>
+    <span class="n">disposable</span> <span class="o">=</span>
+        <span class="n">createNameRepository</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">getName</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">subscribeOn</span><span class="o">(</span><span class="n">Schedulers</span><span class="o">.</span><span class="na">io</span><span class="o">())</span>
+            <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
+            <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span><span class="n">name</span> <span class="o">-&gt;</span> <span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">name</span><span class="o">));</span>
+    <span class="k">return</span> <span class="n">textView</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onDestroyView</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onDestroyView</span><span class="o">();</span>
+    <span class="n">disposable</span><span class="o">.</span><span class="na">dispose</span><span class="o">();</span>
+    <span class="n">textView</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/async/UserFragment.java">Полный код</a></center></p>
+
+<p>Для тестирования подобных ошибок, связанных с асинхронными действиям во фрагменте, нужно закрыть фрагмент сразу же после его открытия. Это можно сделать просто заменив его на другой фрагмент. Тогда при завершении асинхронного действия <code>onCreateView</code> в закрытом фрагменте <code>textView</code> будет <code>null</code> и если допустить ошибку и не отменить подписку, приложение упадет. Напишем правило для тестирования на эту ошибку:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">FragmentAsyncTestRule</span><span class="o">&lt;</span><span class="n">A</span> <span class="kd">extends</span> <span class="n">AppCompatActivity</span><span class="o">&gt;</span>
+    <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">Fragment</span> <span class="n">fragment</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">FragmentAsyncTestRule</span><span class="o">(</span><span class="n">Class</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityClass</span><span class="o">,</span> <span class="n">Fragment</span> <span class="n">fragment</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">activityRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;&gt;(</span><span class="n">activityClass</span><span class="o">);</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">fragment</span> <span class="o">=</span> <span class="n">fragment</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Statement</span> <span class="n">base</span><span class="o">,</span> <span class="n">Description</span> <span class="n">description</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">Statement</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">evaluate</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+          <span class="n">base</span><span class="o">.</span><span class="na">evaluate</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+          <span class="n">activityRule</span><span class="o">.</span><span class="na">launchActivity</span><span class="o">(</span><span class="k">new</span> <span class="n">Intent</span><span class="o">());</span>
+          <span class="n">openFragment</span><span class="o">(</span><span class="n">fragment</span><span class="o">);</span>
+          <span class="n">openFragment</span><span class="o">(</span><span class="k">new</span> <span class="n">Fragment</span><span class="o">());</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/rules/FragmentAsyncTestRule.java">Полный код</a></center></p>
+
+<p>Добавим это правило в класс тестов фрагмента:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragmentTest</span> <span class="o">{</span>
+  <span class="nd">@ClassRule</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="n">TestRule</span> <span class="n">asyncRule</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">FragmentAsyncTestRule</span><span class="o">&lt;&gt;(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">UserFragment</span><span class="o">());</span>
+
+  <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/user/async/UserFragmentTest.java">Полный код</a></center></p>
+
+<p>Теперь тест упадет, если асинхронные действия будут обращаться к полям фрагмента после его завершения.</p>
+
+<h2>Юнит-тестирование Rx кода</h2>
+
+<p>Создадим презентер, куда мы вынесем логику подписки на возвращаемый репозиторием <code>Observable</code> из фрагмента, а также добавим <code>timeout</code> для получения имени из файла:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserPresenter</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Listener</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">onUserNameLoaded</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">);</span>
+    <span class="kt">void</span> <span class="nf">onGettingUserNameError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">Listener</span> <span class="n">listener</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">UserPresenter</span><span class="o">(</span><span class="n">Listener</span> <span class="n">listener</span><span class="o">,</span> <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">listener</span> <span class="o">=</span> <span class="n">listener</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">nameRepository</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getUserName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">nameRepository</span>
+        <span class="o">.</span><span class="na">getName</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">timeout</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">subscribeOn</span><span class="o">(</span><span class="n">Schedulers</span><span class="o">.</span><span class="na">io</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span>
+            <span class="n">listener</span><span class="o">::</span><span class="n">onUserNameLoaded</span><span class="o">,</span>
+            <span class="n">error</span> <span class="o">-&gt;</span> <span class="n">listener</span><span class="o">.</span><span class="na">onGettingUserNameError</span><span class="o">(</span><span class="n">error</span><span class="o">.</span><span class="na">getMessage</span><span class="o">()));</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/rx/timeout/UserPresenter.java">Полный код</a></center></p>
+
+<p>В данном случае при тестировании презентера уже нужно протестировать конечный результат подписки, которая получает данные асинхронно. Напишем наивную версию такого теста:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">RobolectricTestRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserPresenterTest</span> <span class="o">{</span>
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">MockitoRule</span> <span class="n">rule</span> <span class="o">=</span> <span class="n">MockitoJUnit</span><span class="o">.</span><span class="na">rule</span><span class="o">();</span>
+
+  <span class="nd">@Mock</span> <span class="n">UserPresenter</span><span class="o">.</span><span class="na">Listener</span> <span class="n">listener</span><span class="o">;</span>
+  <span class="nd">@Mock</span> <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">;</span>
+  <span class="n">UserPresenter</span> <span class="n">presenter</span><span class="o">;</span>
+
+  <span class="nd">@Before</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">Observable</span><span class="o">.</span><span class="na">just</span><span class="o">(</span><span class="s">&quot;Sasha&quot;</span><span class="o">));</span>
+    <span class="n">presenter</span> <span class="o">=</span> <span class="k">new</span> <span class="n">UserPresenter</span><span class="o">(</span><span class="n">listener</span><span class="o">,</span> <span class="n">nameRepository</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getUserName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">presenter</span><span class="o">.</span><span class="na">getUserName</span><span class="o">();</span>
+    <span class="n">verifyNoMoreInteractions</span><span class="o">(</span><span class="n">listener</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/rx/timeout/withoutrule/UserPresenterTest.java">Полный код</a></center></p>
+
+<p>В данном тесте презентер не вызовет никакой метод объекта <code>listener</code>, так как тест проходит прежде, чем выполняется асинхронное действие. В тестах на эмуляторе Awaitility решает эту проблему. В юнит-тестах тестирование асинхронной природы кода не совсем к месту, а потому в них можно заменить стандартные RxJava <code>Schedulers</code> на синхронные. Используем для этого <a href="http://reactivex.io/RxJava/javadoc/io/reactivex/schedulers/TestScheduler.html">TestScheduler</a>, который позволяет произвольно установить время, которое якобы прошло с момента подписки на <code>Observable</code>, чтобы протестировать корректную установку таймаута. Как обычно, напишем для этого правило:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RxImmediateSchedulerRule</span> <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">TestScheduler</span> <span class="n">TEST_SCHEDULER</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TestScheduler</span><span class="o">();</span>
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Scheduler</span> <span class="n">IMMEDIATE_SCHEDULER</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Scheduler</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">Disposable</span> <span class="nf">scheduleDirect</span><span class="o">(</span><span class="n">Runnable</span> <span class="n">run</span><span class="o">,</span> <span class="kt">long</span> <span class="n">delay</span><span class="o">,</span> <span class="n">TimeUnit</span> <span class="n">unit</span><span class="o">)</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="kd">super</span><span class="o">.</span><span class="na">scheduleDirect</span><span class="o">(</span><span class="n">run</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">unit</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="n">Worker</span> <span class="nf">createWorker</span><span class="o">()</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="k">new</span> <span class="n">ExecutorScheduler</span><span class="o">.</span><span class="na">ExecutorWorker</span><span class="o">(</span><span class="n">Runnable</span><span class="o">::</span><span class="n">run</span><span class="o">);</span>
+    <span class="o">}</span>
+  <span class="o">};</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Statement</span> <span class="n">base</span><span class="o">,</span> <span class="n">Description</span> <span class="n">description</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">Statement</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">evaluate</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+        <span class="n">RxJavaPlugins</span><span class="o">.</span><span class="na">setIoSchedulerHandler</span><span class="o">(</span><span class="n">scheduler</span> <span class="o">-&gt;</span> <span class="n">TEST_SCHEDULER</span><span class="o">);</span>
+        <span class="n">RxJavaPlugins</span><span class="o">.</span><span class="na">setComputationSchedulerHandler</span><span class="o">(</span>
+            <span class="n">scheduler</span> <span class="o">-&gt;</span> <span class="n">TEST_SCHEDULER</span><span class="o">);</span>
+        <span class="n">RxJavaPlugins</span><span class="o">.</span><span class="na">setNewThreadSchedulerHandler</span><span class="o">(</span>
+            <span class="n">scheduler</span> <span class="o">-&gt;</span> <span class="n">TEST_SCHEDULER</span><span class="o">);</span>
+        <span class="n">RxAndroidPlugins</span><span class="o">.</span><span class="na">setMainThreadSchedulerHandler</span><span class="o">(</span>
+            <span class="n">scheduler</span> <span class="o">-&gt;</span> <span class="n">IMMEDIATE_SCHEDULER</span><span class="o">);</span>
+        <span class="k">try</span> <span class="o">{</span>
+          <span class="n">base</span><span class="o">.</span><span class="na">evaluate</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+          <span class="n">RxJavaPlugins</span><span class="o">.</span><span class="na">reset</span><span class="o">();</span>
+          <span class="n">RxAndroidPlugins</span><span class="o">.</span><span class="na">reset</span><span class="o">();</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">TestScheduler</span> <span class="nf">getTestScheduler</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">TEST_SCHEDULER</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/rules/RxImmediateSchedulerRule.java">Полный код</a></center></p>
+
+<p>Тест презентера с новым правилом будет выглядеть следующим образом:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">RobolectricTestRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserPresenterTest</span> <span class="o">{</span>
+  <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">TIMEOUT_SEC</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+  <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">NAME</span> <span class="o">=</span> <span class="s">&quot;Sasha&quot;</span><span class="o">;</span>
+
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">MockitoRule</span> <span class="n">rule</span> <span class="o">=</span> <span class="n">MockitoJUnit</span><span class="o">.</span><span class="na">rule</span><span class="o">();</span>
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">RxImmediateSchedulerRule</span> <span class="n">timeoutRule</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">RxImmediateSchedulerRule</span><span class="o">();</span>
+
+  <span class="nd">@Mock</span> <span class="n">UserPresenter</span><span class="o">.</span><span class="na">Listener</span> <span class="n">listener</span><span class="o">;</span>
+  <span class="nd">@Mock</span> <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">;</span>
+  <span class="n">PublishSubject</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">nameObservable</span> <span class="o">=</span> <span class="n">PublishSubject</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
+  <span class="n">UserPresenter</span> <span class="n">presenter</span><span class="o">;</span>
+
+  <span class="nd">@Before</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">nameObservable</span><span class="o">.</span><span class="na">firstOrError</span><span class="o">());</span>
+    <span class="n">presenter</span> <span class="o">=</span> <span class="k">new</span> <span class="n">UserPresenter</span><span class="o">(</span><span class="n">listener</span><span class="o">,</span> <span class="n">nameRepository</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getUserName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">presenter</span><span class="o">.</span><span class="na">getUserName</span><span class="o">();</span>
+    <span class="n">timeoutRule</span><span class="o">.</span><span class="na">getTestScheduler</span><span class="o">().</span><span class="na">advanceTimeBy</span><span class="o">(</span><span class="n">TIMEOUT_SEC</span> <span class="o">-</span> <span class="mi">1</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">);</span>
+    <span class="n">nameObservable</span><span class="o">.</span><span class="na">onNext</span><span class="o">(</span><span class="n">NAME</span><span class="o">);</span>
+    <span class="n">verify</span><span class="o">(</span><span class="n">listener</span><span class="o">).</span><span class="na">onUserNameLoaded</span><span class="o">(</span><span class="n">NAME</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getUserName_timeout</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">presenter</span><span class="o">.</span><span class="na">getUserName</span><span class="o">();</span>
+    <span class="n">timeoutRule</span><span class="o">.</span><span class="na">getTestScheduler</span><span class="o">().</span><span class="na">advanceTimeBy</span><span class="o">(</span><span class="n">TIMEOUT_SEC</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">);</span>
+    <span class="n">nameObservable</span><span class="o">.</span><span class="na">onNext</span><span class="o">(</span><span class="n">NAME</span><span class="o">);</span>
+    <span class="n">verify</span><span class="o">(</span><span class="n">listener</span><span class="o">).</span><span class="na">onGettingUserNameError</span><span class="o">(</span><span class="n">any</span><span class="o">());</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/rx/timeout/UserPresenterTest.java">Полный код</a></center></p>
+
+<h2>Тестирование кода, использующего Dagger 2</h2>
+
+<p>Для облегчения работы с графом зависимостей объектов отлично подходит паттерн <strong>Dependency Injection</strong>. <a href="https://google.github.io/dagger/">Dagger 2</a> — это библиотека, которая поможет в реализации этого паттерна. Поэтому в большинстве наших Android приложений все компоненты предоставляются с помощью Dagger. Об использовании и преимуществах этой библиотеки можно написать отдельную статью, а тут мы рассмотрим, как тестировать приложения, её использующие.</p>
+
+<p>Начнем с того, что практически всегда при использовании Dagger существует <code>ApplicationComponent</code>, который предоставляет все основные зависимости приложения, и инициализируется в классе приложения <code>Application</code>, который, в свою очередь, имеет метод для получения этого компонента.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@Singleton</span>
+<span class="nd">@Component</span><span class="o">(</span><span class="n">modules</span> <span class="o">=</span> <span class="o">{</span><span class="n">ContextModule</span><span class="o">.</span><span class="na">class</span><span class="o">})</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">ApplicationComponent</span> <span class="o">{</span>
+  <span class="n">UserComponent</span> <span class="nf">createUserComponent</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/ApplicationComponent.java">Полный код</a></center></p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainApplication</span> <span class="kd">extends</span> <span class="n">Application</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="n">ApplicationComponent</span> <span class="n">component</span><span class="o">;</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onCreate</span><span class="o">();</span>
+    <span class="n">component</span> <span class="o">=</span> <span class="n">DaggerApplicationComponent</span><span class="o">.</span><span class="na">builder</span><span class="o">()</span>
+      <span class="o">.</span><span class="na">contextModule</span><span class="o">(</span><span class="k">new</span> <span class="n">ContextModule</span><span class="o">(</span><span class="k">this</span><span class="o">))</span>
+      <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">ApplicationComponent</span> <span class="nf">getComponent</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">component</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/MainApplication.java">Полный код</a></center></p>
+
+<p>Также создадим Dagger модуль, который будет предоставлять репозиторий:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@Module</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserModule</span> <span class="o">{</span>
+  <span class="nd">@Provides</span>
+  <span class="n">NameRepository</span> <span class="nf">provideNameRepository</span><span class="o">(</span><span class="nd">@Private</span> <span class="n">FileReader</span> <span class="n">fileReader</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">NameRepository</span><span class="o">(</span><span class="n">fileReader</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Private</span>
+  <span class="nd">@Provides</span>
+  <span class="n">FileReader</span> <span class="nf">provideFileReader</span><span class="o">(</span><span class="nd">@Private</span> <span class="n">File</span> <span class="n">file</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">FileReader</span><span class="o">(</span><span class="n">file</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Private</span>
+  <span class="nd">@Provides</span>
+  <span class="n">File</span> <span class="nf">provideFile</span><span class="o">(</span><span class="n">Context</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">context</span><span class="o">.</span><span class="na">getFilesDir</span><span class="o">().</span><span class="na">getAbsoluteFile</span><span class="o">()</span>
+        <span class="o">+</span> <span class="n">File</span><span class="o">.</span><span class="na">separator</span>
+        <span class="o">+</span> <span class="s">&quot;test_file&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Qualifier</span>
+  <span class="nd">@Retention</span><span class="o">(</span><span class="n">RetentionPolicy</span><span class="o">.</span><span class="na">RUNTIME</span><span class="o">)</span>
+  <span class="kd">private</span> <span class="nd">@interface</span> <span class="n">Private</span> <span class="o">{}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/UserModule.java">Полный код</a></center></p>
+
+<p>Изменим фрагмент следующим образом, чтобы репозиторий получать с помощью Dagger:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragment</span> <span class="kd">extends</span> <span class="n">Fragment</span> <span class="o">{</span>
+  <span class="o">...</span>
+
+  <span class="nd">@Inject</span> <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">;</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">View</span> <span class="nf">onCreateView</span><span class="o">(</span>
+      <span class="n">LayoutInflater</span> <span class="n">inflater</span><span class="o">,</span> <span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="o">((</span><span class="n">MainApplication</span><span class="o">)</span> <span class="n">getActivity</span><span class="o">().</span><span class="na">getApplication</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">getComponent</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">createUserComponent</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">injectsUserFragment</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+    <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TextView</span><span class="o">(</span><span class="n">getActivity</span><span class="o">());</span>
+    <span class="n">disposable</span> <span class="o">=</span> <span class="n">nameRepository</span>
+        <span class="o">.</span><span class="na">getName</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">subscribeOn</span><span class="o">(</span><span class="n">Schedulers</span><span class="o">.</span><span class="na">io</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span><span class="n">name</span> <span class="o">-&gt;</span> <span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">name</span><span class="o">));</span>
+    <span class="k">return</span> <span class="n">textView</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/dagger/UserFragment.java">Полный код</a></center></p>
+
+<p>Помимо функциональных тестов UI хорошо иметь и unit-тесты с замоканными зависимостями. Чтобы предоставлять мокированные объекты с помощью Dagger, нужно заменить <code>ApplicationComponent</code> на специально созданный компонент для тестов. В первую очередь создадим метод для подмены основного компонента в <code>Application</code>:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">setComponentForTest</span><span class="o">(</span><span class="n">ApplicationComponent</span> <span class="n">component</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">this</span><span class="o">.</span><span class="na">component</span> <span class="o">=</span> <span class="n">component</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/MainApplication.java">Полный код</a></center></p>
+
+<p>Чтобы не заменять компонент в каждом классе с тестами фрагментов, создадим для этого правило:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">class</span> <span class="nc">TestDaggerComponentRule</span><span class="o">&lt;</span><span class="n">A</span> <span class="kd">extends</span> <span class="n">AppCompatActivity</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">ApplicationComponent</span> <span class="n">component</span><span class="o">;</span>
+
+  <span class="n">TestDaggerComponentRule</span><span class="o">(</span>
+      <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">,</span> <span class="n">ApplicationComponent</span> <span class="n">component</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">activityRule</span> <span class="o">=</span> <span class="n">activityRule</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">component</span> <span class="o">=</span> <span class="n">component</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Statement</span> <span class="n">statement</span><span class="o">,</span> <span class="n">Description</span> <span class="n">description</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">Statement</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">evaluate</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+        <span class="n">MainApplication</span> <span class="n">application</span> <span class="o">=</span>
+            <span class="o">((</span><span class="n">MainApplication</span><span class="o">)</span> <span class="n">activityRule</span><span class="o">.</span><span class="na">getActivity</span><span class="o">().</span><span class="na">getApplication</span><span class="o">());</span>
+        <span class="n">ApplicationComponent</span> <span class="n">originalComponent</span> <span class="o">=</span> <span class="n">application</span><span class="o">.</span><span class="na">getComponent</span><span class="o">();</span>
+        <span class="n">application</span><span class="o">.</span><span class="na">setComponentForTest</span><span class="o">(</span><span class="n">component</span><span class="o">);</span>
+        <span class="k">try</span> <span class="o">{</span>
+          <span class="n">statement</span><span class="o">.</span><span class="na">evaluate</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+          <span class="n">application</span><span class="o">.</span><span class="na">setComponentForTest</span><span class="o">(</span><span class="n">originalComponent</span><span class="o">);</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/rules/TestDaggerComponentRule.java">Полный код</a></center></p>
+
+<p>Отметим, что нужно вернуть оригинальный компонент после теста, так как Application создается один для всех тестов и стоит возвращать его к дефолтному состоянию после каждого. Теперь создадим правило, которое будет проводить все подготовки к тестированию фрагмента описанные выше. Перед каждым тестом будет разблокирован экран, запущено активити, открыт нужный нам фрагмент и установлен тестовый Dagger компонент, предоставляющий моки зависимостей.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">FragmentTestRule</span><span class="o">&lt;</span><span class="n">A</span> <span class="kd">extends</span> <span class="n">AppCompatActivity</span><span class="o">,</span> <span class="n">F</span> <span class="kd">extends</span> <span class="n">Fragment</span><span class="o">&gt;</span>
+    <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="n">ActivityTestRule</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityRule</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">F</span> <span class="n">fragment</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">RuleChain</span> <span class="n">ruleChain</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">FragmentTestRule</span><span class="o">(</span>
+      <span class="n">Class</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span> <span class="n">activityClass</span><span class="o">,</span> <span class="n">F</span> <span class="n">fragment</span><span class="o">,</span> <span class="n">ApplicationComponent</span> <span class="n">component</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">fragment</span> <span class="o">=</span> <span class="n">fragment</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">activityRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ActivityTestRule</span><span class="o">&lt;&gt;(</span><span class="n">activityClass</span><span class="o">);</span>
+    <span class="n">ruleChain</span> <span class="o">=</span> <span class="n">RuleChain</span>
+        <span class="o">.</span><span class="na">outerRule</span><span class="o">(</span><span class="n">activityRule</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">around</span><span class="o">(</span><span class="k">new</span> <span class="n">TestDaggerComponentRule</span><span class="o">&lt;&gt;(</span><span class="n">activityRule</span><span class="o">,</span> <span class="n">component</span><span class="o">))</span>
+        <span class="o">.</span><span class="na">around</span><span class="o">(</span><span class="k">new</span> <span class="n">OpenFragmentRule</span><span class="o">&lt;&gt;(</span><span class="n">activityRule</span><span class="o">,</span> <span class="n">fragment</span><span class="o">));</span>
+  <span class="o">}</span>
+
+  <span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/rules/FragmentTestRule.java">Полный код</a></center></p>
+
+<p>Установим тестовый компонент в тесте нашего фрагмента:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragmentTest</span> <span class="o">{</span>
+  <span class="o">...</span>
+
+  <span class="nd">@Rule</span>
+  <span class="kd">public</span> <span class="kd">final</span> <span class="n">FragmentTestRule</span><span class="o">&lt;</span><span class="n">MainActivity</span><span class="o">,</span> <span class="n">UserFragment</span><span class="o">&gt;</span> <span class="n">fragmentRule</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">FragmentTestRule</span><span class="o">&lt;&gt;(</span>
+          <span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
+          <span class="k">new</span> <span class="n">UserFragment</span><span class="o">(),</span>
+          <span class="n">createTestApplicationComponent</span><span class="o">());</span>
+
+  <span class="kd">private</span> <span class="n">ApplicationComponent</span> <span class="nf">createTestApplicationComponent</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">ApplicationComponent</span> <span class="n">component</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">ApplicationComponent</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">component</span><span class="o">.</span><span class="na">createUserComponent</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">DaggerUserFragmentTest_TestUserComponent</span><span class="o">.</span><span class="na">create</span><span class="o">());</span>
+    <span class="k">return</span> <span class="n">component</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Singleton</span>
+  <span class="nd">@Component</span><span class="o">(</span><span class="n">modules</span> <span class="o">=</span> <span class="o">{</span><span class="n">TestUserModule</span><span class="o">.</span><span class="na">class</span><span class="o">})</span>
+  <span class="kd">interface</span> <span class="nc">TestUserComponent</span> <span class="kd">extends</span> <span class="n">UserComponent</span> <span class="o">{}</span>
+
+  <span class="nd">@Module</span>
+  <span class="kd">static</span> <span class="kd">class</span> <span class="nc">TestUserModule</span> <span class="o">{</span>
+    <span class="nd">@Provides</span>
+    <span class="kd">public</span> <span class="n">NameRepository</span> <span class="nf">provideNameRepository</span><span class="o">()</span> <span class="o">{</span>
+      <span class="n">NameRepository</span> <span class="n">nameRepository</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">NameRepository</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+      <span class="n">when</span><span class="o">(</span><span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span>
+          <span class="n">Single</span><span class="o">.</span><span class="na">fromCallable</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="s">&quot;Sasha&quot;</span><span class="o">));</span>
+      <span class="k">return</span> <span class="n">nameRepository</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/androidTest/java/com/testing/user/dagger/UserFragmentTest.java">Полный код</a></center></p>
+
+<h2>Тесты запускаемые только для Debug приложения</h2>
+
+<p>Бывает, что необходимо добавить логику иди элементы UI, которые нужны разработчикам для более удобного тестирования и должны отображаться только если приложение собирается в режиме debug. Давайте для примера сделаем, чтобы в debug сборке презентер не только передавал имя подписчику, но и выводил его в лог:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">class</span> <span class="nc">UserPresenter</span> <span class="o">{</span>
+  <span class="o">...</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getUserName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">nameRepository</span>
+        <span class="o">.</span><span class="na">getName</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">timeout</span><span class="o">(</span><span class="n">TIMEOUT_SEC</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">subscribeOn</span><span class="o">(</span><span class="n">Schedulers</span><span class="o">.</span><span class="na">io</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span>
+            <span class="n">name</span> <span class="o">-&gt;</span> <span class="o">{</span>
+              <span class="n">listener</span><span class="o">.</span><span class="na">onUserNameLoaded</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+              <span class="k">if</span> <span class="o">(</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">logger</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&quot;Name loaded: %s&quot;</span><span class="o">,</span> <span class="n">name</span><span class="o">));</span>
+              <span class="o">}</span>
+            <span class="o">},</span> <span class="n">error</span> <span class="o">-&gt;</span> <span class="n">listener</span><span class="o">.</span><span class="na">onGettingUserNameError</span><span class="o">(</span><span class="n">error</span><span class="o">.</span><span class="na">getMessage</span><span class="o">()));</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/main/java/com/testing/user/debug/UserPresenter.java">Полный код</a></center></p>
+
+<p>Эту логику тоже нужно тестировать, но тесты должны запускаться только при соответствующем типе сборки приложения. Напишем правило <code>DebugTestRule</code>, которое будет проверять тип сборки приложения и запускать тесты только для дебаг версии:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DebugRule</span> <span class="kd">implements</span> <span class="n">TestRule</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">Statement</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Statement</span> <span class="n">base</span><span class="o">,</span> <span class="n">Description</span> <span class="n">description</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">Statement</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">evaluate</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Throwable</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">base</span><span class="o">.</span><span class="na">evaluate</span><span class="o">();</span>
+        <span class="o">}</span>
+      <span class="o">}</span>
+    <span class="o">};</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/rules/DebugRule.java">Полный код</a></center></p>
+
+<p>Тест с этим правилом будет выглядеть следующим образом:</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">class</span> <span class="nc">UserPresenterDebugTest</span> <span class="o">{</span>
+  <span class="o">...</span>
+
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">DebugTestsRule</span> <span class="n">debugRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DebugTestsRule</span><span class="o">();</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">userNameLogged</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">presenter</span><span class="o">.</span><span class="na">getUserName</span><span class="o">();</span>
+    <span class="n">timeoutRule</span><span class="o">.</span><span class="na">getTestScheduler</span><span class="o">().</span><span class="na">triggerActions</span><span class="o">();</span>
+    <span class="n">nameObservable</span><span class="o">.</span><span class="na">onNext</span><span class="o">(</span><span class="n">NAME</span><span class="o">);</span>
+    <span class="n">verify</span><span class="o">(</span><span class="n">logger</span><span class="o">).</span><span class="na">info</span><span class="o">(</span><span class="n">contains</span><span class="o">(</span><span class="n">NAME</span><span class="o">));</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/testing/src/test/java/com/testing/user/debug/UserPresenterDebugTest.java">Полный код</a></center></p>
+
+<h2>Заключение</h2>
+
+<p>В этой статье мы разобрались с базовыми библиотеками для написания тестов и разработали набор инструментов, основанных на <a href="https://developer.android.com/reference/android/support/test/rule/package-summary.html">TestRule</a> и предназначенных для решения проблем запуска активити и фрагментов, работой с асинхронным кодом, даггером, отладочным кодом и эмулятором андроида. Применение этих инструментов позволило протестировать неочевидные проблемы, снизить дублирование кода и в целом повысить читабельность тестов.</p>
+
+<p>Полный пример приложения и тестов, использующих все вышеперечисленные библиотеки и утилиты.</p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepository</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">FileReader</span> <span class="n">fileReader</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">NameRepository</span><span class="o">(</span><span class="n">FileReader</span> <span class="n">fileReader</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">fileReader</span> <span class="o">=</span> <span class="n">fileReader</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="n">Single</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">Single</span><span class="o">.</span><span class="na">create</span><span class="o">(</span>
+        <span class="n">emitter</span> <span class="o">-&gt;</span> <span class="o">{</span>
+          <span class="n">Gson</span> <span class="n">gson</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Gson</span><span class="o">();</span>
+          <span class="n">emitter</span><span class="o">.</span><span class="na">onSuccess</span><span class="o">(</span>
+              <span class="n">gson</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">fileReader</span><span class="o">.</span><span class="na">readFile</span><span class="o">(),</span> <span class="n">User</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">name</span><span class="o">);</span>
+        <span class="o">});</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">User</span> <span class="o">{</span>
+    <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/example/src/main/java/com/example/user/NameRepository.java">Полный код</a></center></p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">MockitoJUnitRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">NameRepositoryTest</span> <span class="o">{</span>
+  <span class="nd">@Mock</span> <span class="n">FileReader</span> <span class="n">fileReader</span><span class="o">;</span>
+  <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">;</span>
+
+  <span class="nd">@Before</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">fileReader</span><span class="o">.</span><span class="na">readFile</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="s">&quot;{name : Sasha}&quot;</span><span class="o">);</span>
+    <span class="n">nameRepository</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NameRepository</span><span class="o">(</span><span class="n">fileReader</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">TestObserver</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">observer</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">().</span><span class="na">test</span><span class="o">();</span>
+    <span class="n">observer</span><span class="o">.</span><span class="na">assertValue</span><span class="o">(</span><span class="s">&quot;Sasha&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/example/src/test/java/com/example/user/NameRepositoryTest.java">Полный код</a></center></p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserPresenter</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Listener</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">onUserNameLoaded</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">);</span>
+    <span class="kt">void</span> <span class="nf">onGettingUserNameError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">Listener</span> <span class="n">listener</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kd">final</span> <span class="n">Logger</span> <span class="n">logger</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">Disposable</span> <span class="n">disposable</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nf">UserPresenter</span><span class="o">(</span>
+      <span class="n">Listener</span> <span class="n">listener</span><span class="o">,</span> <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">,</span> <span class="n">Logger</span> <span class="n">logger</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">listener</span> <span class="o">=</span> <span class="n">listener</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">nameRepository</span> <span class="o">=</span> <span class="n">nameRepository</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">logger</span> <span class="o">=</span> <span class="n">logger</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getUserName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">disposable</span> <span class="o">=</span>
+        <span class="n">nameRepository</span>
+            <span class="o">.</span><span class="na">getName</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">timeout</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">)</span>
+            <span class="o">.</span><span class="na">subscribeOn</span><span class="o">(</span><span class="n">Schedulers</span><span class="o">.</span><span class="na">io</span><span class="o">())</span>
+            <span class="o">.</span><span class="na">observeOn</span><span class="o">(</span><span class="n">AndroidSchedulers</span><span class="o">.</span><span class="na">mainThread</span><span class="o">())</span>
+            <span class="o">.</span><span class="na">subscribe</span><span class="o">(</span>
+                <span class="n">name</span> <span class="o">-&gt;</span> <span class="o">{</span>
+                  <span class="n">listener</span><span class="o">.</span><span class="na">onUserNameLoaded</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+                  <span class="k">if</span> <span class="o">(</span><span class="n">BuildConfig</span><span class="o">.</span><span class="na">DEBUG</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">&quot;Name loaded: %s&quot;</span><span class="o">,</span> <span class="n">name</span><span class="o">));</span>
+                  <span class="o">}</span>
+                <span class="o">},</span>
+                <span class="n">error</span> <span class="o">-&gt;</span> <span class="n">listener</span><span class="o">.</span><span class="na">onGettingUserNameError</span><span class="o">(</span><span class="n">error</span><span class="o">.</span><span class="na">getMessage</span><span class="o">()));</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">stopLoading</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">disposable</span><span class="o">.</span><span class="na">dispose</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/example/src/main/java/com/example/user/UserPresenter.java">Полный код</a></center></p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">RobolectricTestRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserPresenterTest</span> <span class="o">{</span>
+  <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">TIMEOUT_SEC</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+  <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">NAME</span> <span class="o">=</span> <span class="s">&quot;Sasha&quot;</span><span class="o">;</span>
+
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">MockitoRule</span> <span class="n">rule</span> <span class="o">=</span> <span class="n">MockitoJUnit</span><span class="o">.</span><span class="na">rule</span><span class="o">();</span>
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">RxImmediateSchedulerRule</span> <span class="n">timeoutRule</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">RxImmediateSchedulerRule</span><span class="o">();</span>
+
+  <span class="nd">@Mock</span> <span class="n">UserPresenter</span><span class="o">.</span><span class="na">Listener</span> <span class="n">listener</span><span class="o">;</span>
+  <span class="nd">@Mock</span> <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">;</span>
+  <span class="nd">@Mock</span> <span class="n">Logger</span> <span class="n">logger</span><span class="o">;</span>
+  <span class="n">PublishSubject</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">nameObservable</span> <span class="o">=</span> <span class="n">PublishSubject</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
+  <span class="n">UserPresenter</span> <span class="n">presenter</span><span class="o">;</span>
+
+  <span class="nd">@Before</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">nameObservable</span><span class="o">.</span><span class="na">firstOrError</span><span class="o">());</span>
+    <span class="n">presenter</span> <span class="o">=</span> <span class="k">new</span> <span class="n">UserPresenter</span><span class="o">(</span><span class="n">listener</span><span class="o">,</span> <span class="n">nameRepository</span><span class="o">,</span> <span class="n">logger</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getUserName</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">presenter</span><span class="o">.</span><span class="na">getUserName</span><span class="o">();</span>
+    <span class="n">timeoutRule</span><span class="o">.</span><span class="na">getTestScheduler</span><span class="o">().</span><span class="na">advanceTimeBy</span><span class="o">(</span><span class="n">TIMEOUT_SEC</span> <span class="o">-</span> <span class="mi">1</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">);</span>
+    <span class="n">nameObservable</span><span class="o">.</span><span class="na">onNext</span><span class="o">(</span><span class="n">NAME</span><span class="o">);</span>
+    <span class="n">verify</span><span class="o">(</span><span class="n">listener</span><span class="o">).</span><span class="na">onUserNameLoaded</span><span class="o">(</span><span class="n">NAME</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getUserName_timeout</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">presenter</span><span class="o">.</span><span class="na">getUserName</span><span class="o">();</span>
+    <span class="n">timeoutRule</span><span class="o">.</span><span class="na">getTestScheduler</span><span class="o">().</span><span class="na">advanceTimeBy</span><span class="o">(</span><span class="n">TIMEOUT_SEC</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">);</span>
+    <span class="n">nameObservable</span><span class="o">.</span><span class="na">onNext</span><span class="o">(</span><span class="n">NAME</span><span class="o">);</span>
+    <span class="n">verify</span><span class="o">(</span><span class="n">listener</span><span class="o">).</span><span class="na">onGettingUserNameError</span><span class="o">(</span><span class="n">any</span><span class="o">());</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/example/src/test/java/com/example/user/UserPresenterTest.java">Полный код</a></center></p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">RobolectricTestRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserPresenterDebugTest</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">NAME</span> <span class="o">=</span> <span class="s">&quot;Sasha&quot;</span><span class="o">;</span>
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">DebugRule</span> <span class="n">debugRule</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DebugRule</span><span class="o">();</span>
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">MockitoRule</span> <span class="n">mockitoRule</span> <span class="o">=</span> <span class="n">MockitoJUnit</span><span class="o">.</span><span class="na">rule</span><span class="o">();</span>
+  <span class="nd">@Rule</span> <span class="kd">public</span> <span class="kd">final</span> <span class="n">RxImmediateSchedulerRule</span> <span class="n">timeoutRule</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">RxImmediateSchedulerRule</span><span class="o">();</span>
+
+  <span class="nd">@Mock</span> <span class="n">UserPresenter</span><span class="o">.</span><span class="na">Listener</span> <span class="n">listener</span><span class="o">;</span>
+  <span class="nd">@Mock</span> <span class="n">NameRepository</span> <span class="n">nameRepository</span><span class="o">;</span>
+  <span class="nd">@Mock</span> <span class="n">Logger</span> <span class="n">logger</span><span class="o">;</span>
+  <span class="n">PublishSubject</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">nameObservable</span> <span class="o">=</span> <span class="n">PublishSubject</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
+  <span class="n">UserPresenter</span> <span class="n">presenter</span><span class="o">;</span>
+
+  <span class="nd">@Before</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">nameRepository</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">nameObservable</span><span class="o">.</span><span class="na">firstOrError</span><span class="o">());</span>
+    <span class="n">presenter</span> <span class="o">=</span> <span class="k">new</span> <span class="n">UserPresenter</span><span class="o">(</span><span class="n">listener</span><span class="o">,</span> <span class="n">nameRepository</span><span class="o">,</span> <span class="n">logger</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">userNameLogged</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">presenter</span><span class="o">.</span><span class="na">getUserName</span><span class="o">();</span>
+    <span class="n">timeoutRule</span><span class="o">.</span><span class="na">getTestScheduler</span><span class="o">().</span><span class="na">triggerActions</span><span class="o">();</span>
+    <span class="n">nameObservable</span><span class="o">.</span><span class="na">onNext</span><span class="o">(</span><span class="n">NAME</span><span class="o">);</span>
+    <span class="n">verify</span><span class="o">(</span><span class="n">logger</span><span class="o">).</span><span class="na">info</span><span class="o">(</span><span class="n">contains</span><span class="o">(</span><span class="n">NAME</span><span class="o">));</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/example/src/test/java/com/example/user/UserPresenterDebugTest.java">Полный код</a></center></p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragment</span> <span class="kd">extends</span> <span class="n">Fragment</span> <span class="kd">implements</span> <span class="n">UserPresenter</span><span class="o">.</span><span class="na">Listener</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="n">TextView</span> <span class="n">textView</span><span class="o">;</span>
+  <span class="nd">@Inject</span> <span class="n">UserPresenter</span> <span class="n">userPresenter</span><span class="o">;</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="n">View</span> <span class="nf">onCreateView</span><span class="o">(</span>
+      <span class="n">LayoutInflater</span> <span class="n">inflater</span><span class="o">,</span> <span class="n">ViewGroup</span> <span class="n">container</span><span class="o">,</span> <span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="o">((</span><span class="n">MainApplication</span><span class="o">)</span> <span class="n">getActivity</span><span class="o">().</span><span class="na">getApplication</span><span class="o">())</span>
+        <span class="o">.</span><span class="na">getComponent</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">createUserComponent</span><span class="o">(</span><span class="k">new</span> <span class="n">UserModule</span><span class="o">(</span><span class="k">this</span><span class="o">))</span>
+        <span class="o">.</span><span class="na">injectsUserFragment</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+    <span class="n">textView</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TextView</span><span class="o">(</span><span class="n">getActivity</span><span class="o">());</span>
+    <span class="n">userPresenter</span><span class="o">.</span><span class="na">getUserName</span><span class="o">();</span>
+    <span class="k">return</span> <span class="n">textView</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onUserNameLoaded</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onGettingUserNameError</span><span class="o">(</span><span class="n">String</span> <span class="n">message</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">textView</span><span class="o">.</span><span class="na">setText</span><span class="o">(</span><span class="n">message</span><span class="o">);</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onDestroyView</span><span class="o">()</span> <span class="o">{</span>
+    <span class="kd">super</span><span class="o">.</span><span class="na">onDestroyView</span><span class="o">();</span>
+    <span class="n">userPresenter</span><span class="o">.</span><span class="na">stopLoading</span><span class="o">();</span>
+    <span class="n">textView</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/example/src/main/java/com/example/user/UserFragment.java">Полный код</a></center></p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragmentIntegrationTest</span> <span class="o">{</span>
+  <span class="nd">@ClassRule</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="n">TestRule</span> <span class="n">asyncRule</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">FragmentAsyncTestRule</span><span class="o">&lt;&gt;(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">UserFragment</span><span class="o">());</span>
+
+  <span class="nd">@Rule</span>
+  <span class="kd">public</span> <span class="kd">final</span> <span class="n">RuleChain</span> <span class="n">rules</span> <span class="o">=</span> <span class="n">RuleChain</span>
+      <span class="o">.</span><span class="na">outerRule</span><span class="o">(</span><span class="k">new</span> <span class="n">CreateFileRule</span><span class="o">(</span><span class="n">getTestFile</span><span class="o">(),</span> <span class="s">&quot;{name : Sasha}&quot;</span><span class="o">))</span>
+      <span class="o">.</span><span class="na">around</span><span class="o">(</span><span class="k">new</span> <span class="n">FragmentTestRule</span><span class="o">&lt;&gt;(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">UserFragment</span><span class="o">()));</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">nameDisplayed</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">await</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">atMost</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="n">SECONDS</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">ignoreExceptions</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">untilAsserted</span><span class="o">(</span>
+            <span class="o">()</span> <span class="o">-&gt;</span>
+                <span class="n">onView</span><span class="o">(</span><span class="n">ViewMatchers</span><span class="o">.</span><span class="na">withText</span><span class="o">(</span><span class="s">&quot;Sasha&quot;</span><span class="o">))</span>
+                    <span class="o">.</span><span class="na">check</span><span class="o">(</span><span class="n">matches</span><span class="o">(</span><span class="n">isDisplayed</span><span class="o">())));</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="n">File</span> <span class="nf">getTestFile</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span>
+        <span class="n">InstrumentationRegistry</span><span class="o">.</span><span class="na">getTargetContext</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">getFilesDir</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">getAbsoluteFile</span><span class="o">()</span> <span class="o">+</span> <span class="n">File</span><span class="o">.</span><span class="na">separator</span> <span class="o">+</span> <span class="s">&quot;test_file&quot;</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/example/src/androidTest/java/com/example/user/UserFragmentIntegrationTest.java">Полный код</a></center></p>
+<div class="highlight"><pre><code class="language-java" data-lang="java"><span></span><span class="nd">@RunWith</span><span class="o">(</span><span class="n">AndroidJUnit4</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserFragmentTest</span> <span class="o">{</span>
+
+  <span class="nd">@ClassRule</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="n">TestRule</span> <span class="n">asyncRule</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">FragmentAsyncTestRule</span><span class="o">&lt;&gt;(</span><span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="k">new</span> <span class="n">UserFragment</span><span class="o">());</span>
+
+  <span class="nd">@Rule</span>
+  <span class="kd">public</span> <span class="kd">final</span> <span class="n">FragmentTestRule</span><span class="o">&lt;</span><span class="n">MainActivity</span><span class="o">,</span> <span class="n">UserFragment</span><span class="o">&gt;</span> <span class="n">fragmentRule</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">FragmentTestRule</span><span class="o">&lt;&gt;(</span>
+          <span class="n">MainActivity</span><span class="o">.</span><span class="na">class</span><span class="o">,</span>
+          <span class="k">new</span> <span class="n">UserFragment</span><span class="o">(),</span>
+          <span class="n">createTestApplicationComponent</span><span class="o">());</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getNameMethodCalledOnCreate</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">verify</span><span class="o">(</span><span class="n">fragmentRule</span><span class="o">.</span><span class="na">getFragment</span><span class="o">().</span><span class="na">userPresenter</span><span class="o">).</span><span class="na">getUserName</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="kd">private</span> <span class="n">ApplicationComponent</span> <span class="nf">createTestApplicationComponent</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">ApplicationComponent</span> <span class="n">component</span> <span class="o">=</span> <span class="n">mock</span><span class="o">(</span><span class="n">ApplicationComponent</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+    <span class="n">when</span><span class="o">(</span><span class="n">component</span><span class="o">.</span><span class="na">createUserComponent</span><span class="o">(</span><span class="n">any</span><span class="o">(</span><span class="n">UserModule</span><span class="o">.</span><span class="na">class</span><span class="o">)))</span>
+        <span class="o">.</span><span class="na">thenReturn</span><span class="o">(</span><span class="n">DaggerUserFragmentTest_TestUserComponent</span><span class="o">.</span><span class="na">create</span><span class="o">());</span>
+    <span class="k">return</span> <span class="n">component</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="nd">@Singleton</span>
+  <span class="nd">@Component</span><span class="o">(</span><span class="n">modules</span> <span class="o">=</span> <span class="o">{</span><span class="n">TestUserModule</span><span class="o">.</span><span class="na">class</span><span class="o">})</span>
+  <span class="kd">interface</span> <span class="nc">TestUserComponent</span> <span class="kd">extends</span> <span class="n">UserComponent</span> <span class="o">{}</span>
+
+  <span class="nd">@Module</span>
+  <span class="kd">static</span> <span class="kd">class</span> <span class="nc">TestUserModule</span> <span class="o">{</span>
+    <span class="nd">@Provides</span>
+    <span class="kd">public</span> <span class="n">UserPresenter</span> <span class="nf">provideUserPresenter</span><span class="o">()</span> <span class="o">{</span>
+      <span class="k">return</span> <span class="n">mock</span><span class="o">(</span><span class="n">UserPresenter</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+<p><center><a href="https://github.com/Monnoroch/android-testing/blob/master/example/src/androidTest/java/com/example/user/UserFragmentTest.java">Полный код</a></center></p>
+
+<h2>Благодарности</h2>
+
+<p>Статья написана в коллаборации с <a href="https://github.com/AseevEIDev">Evgeny Aseev</a>. Он же написал значительную часть кода наших библиотек. Спасибо за ревью текста статьи и кода — <a href="https://github.com/andrewtar">Andrei Tarashkevich</a>, <a href="https://www.linkedin.com/in/ruslan-login-68bb2676/">Ruslan Login</a>. Спасибо спонсору проекта, компании <a href="https://auraband.io">AURA Devices</a>.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/ru/posts/2018/04/03/generative-adversarial-networks.html" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/ru/posts/2018/02/05/generative-modeling-and-ai.html" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+    <footer>
+        <span>
+            &copy; <time datetime="2018-10-27 19:30:09 +0000">2018</time> You can find me on <a href="https://github.com/Monnoroch">GitHub</a>.
+        </span>
+    </footer>
+    <script src="/scripts/responsive.js" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']]
+            }
+        });
+    </script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</body>
+</html>

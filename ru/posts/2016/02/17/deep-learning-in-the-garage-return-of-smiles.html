@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Глубокое обучение в гараже — Возвращение смайлов &middot; 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/ru/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/ru/">
+                <h2 class="nav-title"></h2>
+            </a>
+            <ul>
+                <li><a href="/ru/about">О блоге</a></li>
+                <li><a href="/ru/">Все посты</a></li>
+            </ul>
+            
+                
+                    
+                        <a href="/posts/2016/02/17/deep-learning-in-the-garage-return-of-smiles.html">
+                            English
+                        </a>
+                    
+                    
+                    
+                
+            
+                
+            
+        </div>
+    </nav>
+    <main>
+        <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        Max Strakhov
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2016-02-17 14:23:00 +0000">February 17, 2016</time>
+    
+  </div>
+
+  <h1 class="post-title">Глубокое обучение в гараже — Возвращение смайлов</h1>
+  <div class="post-line"></div>
+
+  <p><center><img src="/images/posts/2016-02-17-deep-learning-in-the-garage-return-of-smiles/intro-girl.png" width=520 alt="Пример работы системы"/></center></p>
+
+<h2>Так что же со смайлами?</h2>
+
+<p>Фух, ну наконец, детекция лиц работает, можно учить сеть распознавания смайла. Только вот на чем учить? Открытых наборов данных нет. А из того, как долго в предыдущей части я добирался до, собственно, обучения моделей вы уже должны были понять, что в глубоком обучении данные решают все. И их нужно много.</p>
+
+<p>Есть открытые наборы данных с размеченными эмоциями. Но это мне не подходит, ведь мне хочется понимать не выражения лиц, а каррикатурные, специально состроенные выражения лиц, а это совсем не то, что настоящие эмоции.</p>
+
+<p>Ну что ж, надо собирать свою тренировочную выборку! Фотографироваться самому? Но одного человека точно не хватит. После блужданий по картинкам Гугла и Яндекса я пошел на Ютуб. И вот, среди полчищ котиков и лэтсплеев мне попалось вот это видео:</p>
+
+<p><center><a href="https://www.youtube.com/watch?v=hCxv7TxbNxo"><img src="https://img.youtube.com/vi/hCxv7TxbNxo/0.jpg" alt="Исходное видео"></a></center></p>
+
+<p>Ура! То, что надо! В результате недолгих поисков я нарыл еще парочку подобных видео и принялся за разметку, что тоже довольно весело, и дало повод разобраться с OpenCV для питона, но да статья не об этом.</p>
+
+<p>В итоге получился такой датасет, что я совершенно не верил в успех операции:</p>
+
+<ol>
+<li>Он очень маленький (около трех тысяч фоток).</li>
+<li>Всего около двадцати человек.</li>
+<li>Только девушки (это было плюсом во время разметки, но по результату мужиков сеть не понимает совсем)</li>
+<li>Я размечал лицо почти на каждом кадре, так что получилось по десятку-полтора очень похожих фоток каждой пары (девушка, смайл).</li>
+<li>Довольно много классов на такое число фоток: 17.</li>
+<li>Есть похожие смайлы. По факту, в результате сеть их периодически путает.</li>
+</ol>
+
+<p>Но раз уж работа проделана, чего ж не попробовать? Я взял архитектуру большой сети из модуля детекции, заменил классификатор наверху с двух классов на семнадцать и пошел учить.</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">build_net_smiles</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">InputLayer</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">48</span><span class="p">,</span> <span class="mi">48</span><span class="p">),</span> <span class="n">input_var</span><span class="o">=</span><span class="nb">input</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">p</span><span class="o">=.</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">conv</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">nolin</span><span class="o">=</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">batchnorm</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">max_pool</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">conv</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">nolin</span><span class="o">=</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">batchnorm</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">max_pool</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">conv</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">nolin</span><span class="o">=</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">batchnorm</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">max_pool</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">conv</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">nolin</span><span class="o">=</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">batchnorm</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">max_pool</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">DenseLayer</span><span class="p">(</span><span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">p</span><span class="o">=.</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_units</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">nolin</span><span class="o">=</span><span class="n">relu</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">batchnorm</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
+    <span class="n">network</span> <span class="o">=</span> <span class="n">DenseLayer</span><span class="p">(</span><span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">p</span><span class="o">=.</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_units</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">nolin</span><span class="o">=</span><span class="n">linear</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">network</span>
+</code></pre></div>
+<p><br/>
+И я был прав! Даже картинку показывать не буду, получилось ужасно. Однако, наученный опытом я не отчаялся сразу, а с питоном наперевес ринулся кодить максимально разнообразную аугментацию данных, стремясь хотя бы приблизиться к парадигме &quot;эффективно бесконечного&quot; набора данных, аналогичную аугментации для детекции. Алгоритм приводить не буду, он точно такой же, какой был для детекции. Сразу скажу, что тут эффективность дополнения сильно меньше, чем для детекции потому, что по факту уникальных фоток очень мало, а все те три тысячи -- это соседние кадры, которые мало отличаются и сами, по сути, похожи на эту самую аугментацию.</p>
+
+<p>И снова провал: на валидационных девушках (т.е. девушках, выделенных целиком в валидационное множество) определяется очень плохо. Как я и предполагал, 20 девушек -- это слишком мало, чтобы все хорошо работало, так что я решил немного ослабить требования и не выделять целых девушек в валидационное множество, в результате чего от модели ожидается переобучиться на конкретных людей из тренировочной выборки и будет плохо работать на других людях, что и произошло; но не переобучиться на конкретные изображения (данных-то с аугментацией достаточно много!).</p>
+
+<p>В таких условиях получилось даже хорошо:</p>
+
+<p><center><img src="/images/posts/2016-02-17-deep-learning-in-the-garage-return-of-smiles/train-1-losses.png" height=264 alt="Ошибка"/><img src="/images/posts/2016-02-17-deep-learning-in-the-garage-return-of-smiles/train-1-accuracy.png" height=264 alt="Точность"/></center></p>
+
+<p>Видно, что расколбас сходится, и мои предыдущие опыты подсказывают, что увеличение объема данных -- это самый кошерный способ это починить, но, увы, данных больше у меня нет: их довольно непросто найти и еще сложнее размечать.</p>
+
+<h2>Система</h2>
+
+<p>Ну и, наконец, весь пайплайн. Одна картинка вместо тысячи слов:</p>
+
+<p><center><img src="/images/posts/2016-02-17-deep-learning-in-the-garage-return-of-smiles/raffaello-example.png" height=300 alt="Пример работы"/></center></p>
+
+<p>Тут замечу, что в конце детекции лиц получилось два квадрата, а не один потому, что площади их пересечения недостаточно, чтобы алгоритм понял, что они относятся к одному лицу. Над этим я еще работаю и тут нет однозначного решения. Необходимо придумывать алгоритм под задачу, что я и сделал для демо: выбрал один лучший квадрат для классификации на нем смайла.</p>
+
+<p>Так же, если просто взять квадрат, найденный детектором и получать смайл по нему, то получается плохо: ведь эта сетка была обучена на слишком малом объеме данных, и она очень чувствительна к изменениям входов. А детектор как раз вполне может выдавать очень разные результаты: и покрывающие лицо, и центр лица, а порой даже просто кусок лица. На это классификатор смайлов очень плохо реагирует, так что вместо того, чтобы брать один квадрат, я беру 45 рядом стоящих и провожу голосование. Число слева внизу -- это как раз какой процент от максимума набрал этот смайл. Для каждого из 45 окон классификатор выдает распределение по смайлам, которые я просто векторно суммирую по всем окнам и делю на сумму уже по всем смайлам (которая должна быть равна 45, так как от сумма по смайлам от каждого окна, будучи распределением вероятностей, равна единице).</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="c1"># sum probabilities over all windows</span>
+<span class="n">smile_probs_sum</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lasagne</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="n">net_smiles</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># get best class and its score</span>
+<span class="n">classify_smiles</span> <span class="o">=</span> <span class="n">theano</span><span class="o">.</span><span class="n">function</span><span class="p">([</span><span class="n">T</span><span class="o">.</span><span class="n">tensor4</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">)],</span> <span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">smile_probs_sum</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">smile_probs_sum</span><span class="p">)])</span>
+
+<span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+    <span class="n">smile_cls</span><span class="p">,</span> <span class="n">smile_val</span> <span class="o">=</span> <span class="n">classify_smiles</span><span class="p">(</span><span class="o">*</span><span class="n">frames</span><span class="p">)</span>
+    <span class="n">smile_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">smile_val</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">smile_cls</span><span class="p">,</span> <span class="n">smile_val</span> <span class="o">/</span> <span class="mi">17</span>
+</code></pre></div>
+<p><br/></p>
+
+<h2>Покажи уже результат!</h2>
+
+<p>В качестве теста работы системы я прогнал ее на оригинальном видео, одном из тех, на которых учился (да-да, это не полный вин, но так было задумано, для полного вина нужно собрать много данных от большого числа людей). Заодно, видео было замедлено в несколько раз, чтобы успевать следить за работой сети:</p>
+
+<p><center><a href="https://youtu.be/yJrHcoQhBJI"><img src="https://img.youtube.com/vi/yJrHcoQhBJI/0.jpg" alt="Результат распознавания"></a></center></p>
+
+<h2>Бонус</h2>
+
+<p>Как я сказал выше, данных для обучения я собрал недостаточно для обучения полноценной модели, которая бы работала на произвольных людях. Поэтому, было решено сделать краудфандинг-платформу для сбора этих данных <em>(ха-ха, какое громкое название)</em>!</p>
+
+<p>Итого, был сделан <a href="https://95.213.131.138:3000/">небольшой сервис на Go под названием Smielfy v0.1</a>, который предлагает вам изобразить смайл, показывает пример, как это делали до вас в видео на ютубе и дает возможность сделать фото и отправить понравившиеся фото на сервер, где оно аккуратно положится в папку, которую я, если накопится достаточно данных, смогу использовать для обучения более крутой модели, которая будет уже по-честному способна справиться с определением смайла на любом человеке и которую можно будет задеплоить в (некоммерческое) приложение!</p>
+
+<p>Сервис использует самоподписанный SSL-сертификат, который нужен только для того, чтобы браузер разрешал использовать API web-камеры.</p>
+
+<h2>Благодарности</h2>
+
+<ul>
+<li>Спасибо <a href="https://www.linkedin.com/in/ruslan-login-68bb2676/">Ruslan Login</a>, который сделал сервис Smielfy буквально за один день вчера и который помогал мне размечать смайлы.</li>
+<li>Спасибо <a href="https://github.com/GeniyX">Nikita Muratov</a>, который прямо сейчас делает редизайн Smielfy и который был основным разработчиком DeepEvent v2.0 -- новой версии системы мониторинга и визуализации обучения нейронных сетей.</li>
+<li>Спасибо <a href="https://github.com/andrewtar">Andrei Tarashkevich</a> за помощь с версткой этой статьи в Jekyll и за помощь в разработке DeepEvent.</li>
+</ul>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/ru/posts/2017/10/30/generative-modeling-with-deep-learning.html" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/ru/posts/2016/02/16/deep-learning-in-the-garage-two-nets.html" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+    <footer>
+        <span>
+            &copy; <time datetime="2018-10-27 19:30:09 +0000">2018</time> You can find me on <a href="https://github.com/Monnoroch">GitHub</a>.
+        </span>
+    </footer>
+    <script src="/scripts/responsive.js" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']]
+            }
+        });
+    </script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</body>
+</html>

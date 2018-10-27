@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Generative Adversarial Networks &middot; 
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/">
+                <h2 class="nav-title"></h2>
+            </a>
+            <ul>
+                <li><a href="/about">About</a></li>
+                <li><a href="/">All posts</a></li>
+            </ul>
+            
+                
+            
+                
+                    
+                        <a href="/ru/posts/2018/04/03/generative-adversarial-networks.html">
+                            Russian
+                        </a>
+                    
+                    
+                    
+                
+            
+        </div>
+    </nav>
+    <main>
+        <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        Max Strakhov
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2018-04-03 09:00:00 +0000">April 03, 2018</time>
+    
+  </div>
+
+  <h1 class="post-title">Generative Adversarial Networks</h1>
+  <div class="post-line"></div>
+
+  <p>In the <a href="/posts/2018/02/05/generative-modeling-and-ai.html">previous post</a> we discussed a simple linear generative model called PPCA. Second generative model we will take a look at will be Generative Adversarial Networks (GAN). In this post we will describe the basic version of this model leaving advanced and more complicated versions and comparisons with other generative models for future posts.</p>
+
+<p><center><img src="/images/posts/2018-04-03-generative-adversarial-networks/intro.gif" width="520"/></center></p>
+
+<h2>Background</h2>
+
+<p>Generative modelling normally requires approximation of hard to compute posterior distributions. Because of that many efficient methods for training discriminative models do not work with generative models. Methods that existed in the past were computationally hard and were mostly based on <a href="https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo">Markov Chain Monte Carlo</a> which is not very scalable. Training complex generative models on large datasets required efficient training algorithms based on scalable techniques, such as <a href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">Stochastic Gradient Descent (SGD)</a> and <a href="https://en.wikipedia.org/wiki/Backpropagation">backpropagation</a>. One of these methods &mdash; Generative Adversarial Networks (or GANs). For the first time GANs were proposed <a href="https://arxiv.org/pdf/1406.2661.pdf">in this</a> paper from 2014. At a high level this model can be described as two sub-models that “compete” with each other. One of them (the generator) is trying to, in some sense, “fool” the second one (the discriminator). To do that the generator generates random objects and the discriminator is trying to discriminate these generated objects from real objects from the training set. During training the generator is generating examples that look more and more like objects from the training set and the discriminator is having a harder time discriminating between them. As a result, the generator becomes a generative model that is able to generate objects from the same distribution as objects from the training set, for example, images of human faces.</p>
+
+<h2>The model</h2>
+
+<p>Let’s define the problem mathematically. Suppose we have a set $X$. For example, that could be images $64\times 64\times 3$ pixels. On some probability space $\Omega$ there is a vector-valued random variable $x : \Omega \to X$ distributed with density $p(x)$ such that the subset of $X$ on which $p(x)$ takes non-zero values is, for example, images of human faces. We also have an i.i.d. sample ${x_i,  i \in [1, N], x_i \sim p(x)}$. Let’s also define a helper set $Z=R^n$ and a random variable $z:\Omega \to Z$ distributed with density $q(z)$. Then $D:X \to (0,1)$ is a discriminator function. It receives an element $x \in X$ (i.e. an image in our example) and returns the probability of this element being an image of a human face. $G: Z \to X$ is a generator function. It receives an element $z \in Z$ and returns an element of $X$, which in this example is an image.</p>
+
+<p>Suppose now we have a perfect discriminator $D$. For any example $x$ it can always tell if $x$ is from the subset of $X$ from which ${x_i}$ was sampled. Reformulating the problem of “fooling” the discriminator probabilistically, we need to maximize the probability returned by the perfect discriminator on generated examples. Then the optimal generator can be obtained as $G^{*}=\arg \max_G E_{z \sim q(x)} D_k\left(G\left(z\right)\right)$. Because $$\log(x)$$ is a monotonically increasing function and does not change extremum locations this formula can be rewritten as $G^{*}=\arg \max_G E_{z \sim q(x)} \log D_k\left(G\left(z\right)\right)$ which will be convenient later.</p>
+
+<p>In reality we most likely don’t have the perfect discriminator. However, the actual goal of the discriminator here is to provide the signal to train the generator. Because of that it’s enough to have a discriminator that can only perfectly discriminate examples, generated by the current generator, i.e. only on the subset of $$X$$ from which the current generator generates samples. This can be reformulated as searching for such $$D$$ that maximizes the probability of correct classification of objects as “real” or “generated”. This is a binary classification problem and in this case we have an infinite training set: a finite number of “real” examples from the dataset and a potentially infinite number of examples, generated by the generator. Each example has a label: whether it’s real or generated. The solution to such a problem with maximum likelihood was described In the <a href="/posts/2017/10/30/generative-modeling-with-deep-learning.html">first post</a>. Let’s write it down for our problem here.</p>
+
+<p>So, our training set is $S={(x, 1), x \sim p(x)} \cup {(G(z), 0), z \sim q(z) }$. Let’s define a probability density $f(\xi|\eta=1)=D(\xi), f(\xi|\eta=0)=1−D(\xi)$. Then $f(\xi|\eta)$ is a reformulation as a distribution of discriminator $D$ on classes ${0, 1}$, that outputs the probability of class $1$ (the example is real). Because $D(\xi) \in (0, 1)$ this formula defines a correct probability distribution. Then the optimal discriminator can be found as:</p>
+
+<p>\begin{equation}
+    D^{*}=f^{*}(\xi|\eta)=\arg \max_{f} f(\xi_1,...|\eta_1,...)=\arg \max_{f} \prod_i f(\xi_i|\eta_i)
+\end{equation}</p>
+
+<p>Let’s group factors for $\eta_i=0$ и $\eta_i=1$:</p>
+
+<p>\begin{equation}
+D^{*}=\arg \max_{f} \prod_{i, \eta=1} f\left(\xi_i|\eta_i=1\right) \prod_{i, \eta=0} f\left(\xi_i|\eta_i=0\right)=
+\end{equation}
+\begin{equation}
+=\arg \max_{D} \prod_{x_i \sim p(x)} D\left(x_i \right) \prod_{z_i \sim q(z)} \left(1−D\left(G\left(z_i\right)\right)\right)=
+\end{equation}
+\begin{equation}
+=\arg \max_{D} \sum_{x_i \sim p(x)} \log D\left(x_i\right) + \sum_{z_i \sim q(z)} \log \left(1−D\left(G\left(z_i\right)\right)\right)
+\end{equation}</p>
+
+<p>Increasing the sample size to infinity we get:</p>
+
+<p>\begin{equation}
+D^{*}=\arg \max_{D}E_{x_i \sim p(x)} \log D\left(x_i\right) + E_{z_i \sim q(z)} \log \left(1−D\left(G\left(z_i\right)\right)\right)
+\end{equation}</p>
+
+<p>As a result we get the following iterative process:</p>
+
+<ol>
+<li>Choose arbitrary starting $G_0(z)$.</li>
+<li>The $k$-th iteration begins, $k = 1...K$.</li>
+<li>Search for a discriminator, optimal for the current generator.
+$D_k=\arg \max_{D}E_{x_i \sim p(x)} \log D\left(x_i\right) + E_{z_i \sim q(z)} \log \left(1−D\left(G_{k−1}\left(z_i\right)\right)\right)$</li>
+<li>Improve the generator using the optimal discriminator: $G_k=\arg \max_G E_{z \sim q(x)} \log D_k\left(G\left(z\right)\right)$. It’s important that the changes to the generator are small enough for it to be close to the original one on this iteration. If it’ll be too different, the discriminator will stop being optimal and the algorithm will become incorrect.</li>
+<li>The problem is solved when $D_k(x)=1/2$ for any $x$. If the process didn’t converge, go to the next iteration (2).</li>
+</ol>
+
+<p>In the original paper this algorithm is summarized in a single formula that defines, in some sense, a min-max game between the discriminator and the generator:</p>
+
+<p>\begin{equation}
+  \min_G \max_D L(D, G) = E_{x \sim p(x)} \log D(x) + E_{z \sim q(z)} \log \left(1−D\left(G\left(z\right)\right)\right)
+\end{equation}</p>
+
+<p>Neural networks can be used for both $D, G$: $D(x) = D(x, \theta_1), G(z)=G(z, \theta_2)$. Then the problem of finding optimal functions is reduced to finding optimal parameters, which can be solved with standard methods such as backpropagation an SGD. In addition, because a neural network is a universal function approximator, $G(z, \theta_2)$ can approximate an arbitrary probability distribution which solves the problem of choosing $q(z)$. Any sensible continuous distribution can be picked, such as $Uniform(−1,1)$ or $N(0, 1)$. Correctness of this algorithm is proven in the original paper.</p>
+
+<h2>Finding parameters of a normal distribution</h2>
+
+<p>Now that we’ve dealt with the math, let’s see how this works. Suppose $X=R$, i.e. we’re solving a one-dimensional problem. $p(x)=N(\mu, \sigma), q(z)=N(0, 1)$. Let’s use a linear generator $G(z, \theta)=a z + b$, where $\theta={a, b}$. The discriminator will be a fully-connected neural net with three layers with a binary classifier on top. Analytical solution of this problem is $G(z, \mu, \sigma)=\mu z + \sigma$, i.e. $a=\mu, b=\sigma$. Let’s solve this problem numerically using Tensorflow. Complete code can be found <a href="https://github.com/Monnoroch/generative/tree/master/gan_model_data">here</a>, in this post we will only look at key points.</p>
+
+<p>First, let’s generate the input sample $p(x)=N(\mu, \sigma)$. Because we use minibatch training, we will generate vectors of numbers. The sample is parametrized by a mean and a standard deviation.</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">data_batch</span><span class="p">(</span><span class="n">hparams</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Input data are just samples from N(mean, stddev).</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">hparams</span><span class="o">.</span><span class="n">input_mean</span><span class="p">,</span> <span class="n">hparams</span><span class="o">.</span><span class="n">input_stddev</span><span class="p">)</span>
+</code></pre></div>
+<p>Now let’s generate random input for the generator $q(z)=N(0,1)$:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">generator_input</span><span class="p">(</span><span class="n">hparams</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Generator input data are just samples from N(0, 1).</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">random_normal</span><span class="p">([</span><span class="n">hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+</code></pre></div>
+<p>Define the generator. Compute the absolute value of the second parameter for it to have a meaning of a standard deviation:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">hparams</span><span class="p">):</span>
+  <span class="n">mean</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">0.</span><span class="p">))</span>
+  <span class="n">stddev</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">1.</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+  <span class="k">return</span> <span class="nb">input</span> <span class="o">*</span> <span class="n">stddev</span> <span class="o">+</span> <span class="n">mean</span>
+</code></pre></div>
+<p>Create a vector of real examples:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">real_input</span> <span class="o">=</span> <span class="n">data_batch</span><span class="p">(</span><span class="n">hparams</span><span class="p">)</span>
+</code></pre></div>
+<p>And a vector of generated examples:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">generator_input</span> <span class="o">=</span> <span class="n">generator_input</span><span class="p">(</span><span class="n">hparams</span><span class="p">)</span>
+<span class="n">generated</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">generator_input</span><span class="p">)</span>
+</code></pre></div>
+<p>Now we pass all examples through the discriminator. It’s important to remember that we don’t want to have two different discriminators, so we need to tell Tensorflow to use the same parameters form both inputs:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s2">&quot;discriminator&quot;</span><span class="p">):</span>
+  <span class="n">real_ratings</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">real_input</span><span class="p">,</span> <span class="n">hparams</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">variable_scope</span><span class="p">(</span><span class="s2">&quot;discriminator&quot;</span><span class="p">,</span> <span class="n">reuse</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+  <span class="n">generated_ratings</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">generated</span><span class="p">,</span> <span class="n">hparams</span><span class="p">)</span>
+</code></pre></div>
+<p>Loss function on real examples is a cross-entropy between one (expected discriminator output of real examples) and current discriminator output on real examples:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">loss_real</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span>
+  <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid_cross_entropy_with_logits</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">real_ratings</span><span class="p">),</span>
+    <span class="n">logits</span><span class="o">=</span><span class="n">real_ratings</span><span class="p">))</span>
+</code></pre></div>
+<p>Loss function on generated examples is a cross-entropy between zero (expected discriminator output of generated examples) and current discriminator output on generated examples:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">loss_generated</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span>
+  <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid_cross_entropy_with_logits</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">generated_ratings</span><span class="p">),</span>
+    <span class="n">logits</span><span class="o">=</span><span class="n">generated_ratings</span><span class="p">))</span>
+</code></pre></div>
+<p>Discriminator’s loss function is a sum of loss functions on real and generated examples:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">discriminator_loss</span> <span class="o">=</span> <span class="n">loss_generated</span> <span class="o">+</span> <span class="n">loss_real</span>
+</code></pre></div>
+<p>Generator’s loss function is a cross-entropy between one (desired incorrect output of the discriminator on generated examples) and current  discriminator output on generated examples:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="n">generator_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span>
+  <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid_cross_entropy_with_logits</span><span class="p">(</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">generated_ratings</span><span class="p">),</span>
+    <span class="n">logits</span><span class="o">=</span><span class="n">generated_ratings</span><span class="p">))</span>
+</code></pre></div>
+<p>We can also optionally apply L2-regularization to the discriminators loss.</p>
+
+<p>Now training the model is done by training the discriminator and the generator in lock-step until convergence:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">max_steps</span><span class="p">):</span>
+  <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">discriminator_train</span><span class="p">)</span>
+  <span class="n">session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">generator_train</span><span class="p">)</span>
+</code></pre></div>
+<p>Below are graphs for four discriminator models:</p>
+
+<ul>
+<li>3-layer neural net.</li>
+<li>3-layer neural net with L2-regularization.</li>
+<li>3-layer neural net with dropout-regularization.</li>
+<li>3-layer neural net with L2- and dropout-regularization</li>
+</ul>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 1. The probability of classifying a real example as a real example by the discriminator.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_real.png" alt="Fig. 1. The probability of classifying a real example as a real example by the discriminator." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 2. The probability of classifying a generated example as a real example by the discriminator.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_fake.png" alt="Fig. 2. The probability of classifying a generated example as a real example by the discriminator." width="520"/></td></tr>
+</table> </center></p>
+
+<p>All four models quickly converge to a discriminator returning $1/2$ for all inputs. Because the problem is easy, there is not much of a difference between models. The following graphs show that the means and the standard deviations quickly converge to their true values:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 3. Mean of generator distribution.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/g_mean.png" alt="Fig. 3. Mean of generator distribution." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 4. Standard deviation of generator distribution.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/g_stddev.png" alt="Fig. 4. Standard deviation of generator distribution." width="520"/></td></tr>
+</table> </center></p>
+
+<p>Below are distributions of real and generated examples during training. It can be seen that generated examples are almost indistinguishable from the real ones (though Tensorboard decided to choose different scales, so you have to look at the axis marks).</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig 5. Distribution of real data. Doesn’t change during training. Training step is displayed on the vertical axe.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/real_data_base_train.png" alt="Fig 5. Distribution of real data. Doesn’t change during training. Training step is displayed on the vertical axe." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom"></caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_base_train.png" alt="" width="520"/></td></tr>
+</table> </center></p>
+
+<p><center>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_l2_reg_train_a.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropuot_l2_reg_train_a.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropuot_train_a.png" width="170"/>
+</center>
+<center>
+Fig 6. Distribution of generated data from four models. Converges to real data distribution. Training step is displayed on the vertical axe.
+</center></p>
+
+<p>Let’s look at how the model was changing during training:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 7. Training process visualization. The static bell curve is the real data distribution density, the moving bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/intro.gif" alt="Fig. 7. Training process visualization. The static bell curve is the real data distribution density, the moving bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real." width="520"/></td></tr>
+</table> </center></p>
+
+<p>It can be seen that the discriminator is performing very well in the beginning of the training, but the generated distribution quickly “crawls” on top the the real one. In the end the generated has fitted the data so well that the discriminator becomes the $1/2$ constant and the solution converges.</p>
+
+<h2>Fitting a mixture of normal distributions I</h2>
+
+<p>Now let’s replace $p(x)=N(\mu,\sigma)$ with $p(x)=Mixture(N(\mu_1, \sigma_1), N(\mu_2, \sigma_2))$ so that the distribution of real data is bimodal. For this model we only need to change the code for generating real samples. Instead of returning a sample of a normally distributed random variable we return a sample from the mixture:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">data_batch</span><span class="p">(</span><span class="n">hparams</span><span class="p">):</span>
+  <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hparams</span><span class="o">.</span><span class="n">input_mean</span><span class="p">)</span>
+  <span class="n">componens</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+      <span class="n">componens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span>
+          <span class="n">loc</span><span class="o">=</span><span class="n">hparams</span><span class="o">.</span><span class="n">input_mean</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+          <span class="n">scale</span><span class="o">=</span><span class="n">hparams</span><span class="o">.</span><span class="n">input_stddev</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+  <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Mixture</span><span class="p">(</span>
+    <span class="n">cat</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
+      <span class="n">probs</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="o">/</span><span class="n">count</span><span class="p">]</span> <span class="o">*</span> <span class="n">count</span><span class="p">),</span>
+    <span class="n">components</span><span class="o">=</span><span class="n">componens</span><span class="p">)</span>
+      <span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">sample_shape</span><span class="o">=</span><span class="p">[</span><span class="n">hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+</code></pre></div>
+<p>Below are the same graphs as in the previous experiment but for the bimodal distribution:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 8. The probability of classifying a real example as a real example by the discriminator.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_real_2_models.png" alt="Fig. 8. The probability of classifying a real example as a real example by the discriminator." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 9. The probability of classifying a generated example as a real example by the discriminator.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_fake_2_models.png" alt="Fig. 9. The probability of classifying a generated example as a real example by the discriminator." width="520"/></td></tr>
+</table> </center></p>
+
+<p>It is interesting to note that regularized models perform significantly better than non-regularized ones. However independently of the model it is easily seen that the generator can’t “fool” the discriminator now. Let’s see why is that.</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 10. Mean of generator distribution.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/g_mean_2.png" alt="Fig. 10. Mean of generator distribution." width="520"/></td></tr>
+</table> </center>
+<center> <table class="image">
+    <caption align="bottom">Fig. 11. Standard deviation of generator distribution.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/g_stddev_2.png" alt="Fig. 11. Standard deviation of generator distribution." width="520"/></td></tr>
+</table> </center></p>
+
+<p>Just like in the first experiment the generator approximates the data with a normal distribution. The reason for the approximation quality drop is that it’s impossible to approximate a bimodal distribution with a normal distribution which only has one mode. The modes are symmetric with respect to zero and it is easily seen from the graphs above that the data distribution is being approximated by all four models with a normal distribution with mean around zero and high standard deviation to cover variation from both modes. Let’s look at real and generated distributions to understand what’s going on:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig 12. Distribution of real data. Doesn’t change during training. Training step is displayed on the vertical axe.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/real_data_base_train_2.png" alt="Fig 12. Distribution of real data. Doesn’t change during training. Training step is displayed on the vertical axe." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom"></caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_base_train_2.png" alt="" width="520"/></td></tr>
+</table> </center>
+<center>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_l2_reg_train_2.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropout_l2_reg_train_2.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropout_train_2.png" width="170"/>
+</center>
+<center>
+Fig 13. Distribution of generated data from four models. Training step is displayed on the vertical axe.
+</center></p>
+
+<p>Here’s the training process:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 14. Training process visualization. The static orange curve is the real data distribution density, the green bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/training.gif" alt="Fig. 14. Training process visualization. The static orange curve is the real data distribution density, the green bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real." width="520"/></td></tr>
+</table> </center></p>
+
+<p>This animation explains the case described above. The generator, not being powerful enough and only being able to approximate data with a bell curve, is stretching this curve too wide to span both modes. As a result the generator can only fool the discriminator in places where areas under generator density and real density curves are similar, i.e around the points where these curves intersect.</p>
+
+<p>This however is not the only option. Let’s move the right mode a bit further to the right, so that the generator doesn’t capture it’s variance in the beginning of the training. Here is what we get:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 15. Training process visualization. The static orange curve is the real data distribution density, the green bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real.
+</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/training_2.gif" alt="Fig. 15. Training process visualization. The static orange curve is the real data distribution density, the green bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real.
+" width="520"/></td></tr>
+</table> </center></p>
+
+<p>It can be seen that it’s most beneficial for the generator to approximate the left mode of the real data distribution. After this has happened, the generator starts trying to fit the right mode as well. This looks like oscillations of generator’s standard deviation in the second half of the animation. But all these attempts fail because the discriminator “locks” the generator by a high loss barrier which it can not break because of a too small learning rate. This effect is called mode collapsing.</p>
+
+<p>Two examples above show two kinds of issues caused by a generator that is too simple for the problem. The first one is mode averaging, when the generator is trying to approximate multiple modes with just one and is bad everywhere as a result. The second one is mode collapsing when the generator only approximates a subset of all modes and is completely ignorant of other modes.</p>
+
+<p>Both issues cause the discriminator to not converge to $1/2$, but also they cause a generative model to be worse. Mode averaging causes the generator to generate samples from between the modes with high probability, which is incorrect. Mode collapsing causes the generator to only generate samples from a subset of modes making it less reach than the original data distribution.</p>
+
+<h2>Fitting a mixture of normal distributions II</h2>
+
+<p>The reason for failing to “fool” the discriminator in the examples above was that the generator was too simple for the problem at hand. Let’s try to use a fully-connected neural network instead of a simple linear function:</p>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span></span><span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">hparams</span><span class="p">):</span>
+  <span class="c1"># First fully connected layer with 256 features.</span>
+  <span class="n">input_size</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="n">features</span> <span class="o">=</span> <span class="mi">256</span>
+  <span class="n">weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+    <span class="s2">&quot;weights_1&quot;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal</span><span class="p">(</span>
+      <span class="p">[</span><span class="n">input_size</span><span class="p">,</span> <span class="n">features</span><span class="p">],</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+  <span class="n">biases</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+    <span class="s2">&quot;biases_1&quot;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">features</span><span class="p">]))</span>
+  <span class="n">hidden_layer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span> <span class="o">+</span> <span class="n">biases</span><span class="p">)</span>
+
+  <span class="c1"># Second fully connected layer with 256 features.</span>
+  <span class="n">features</span> <span class="o">=</span> <span class="mi">256</span>
+  <span class="n">weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+    <span class="s2">&quot;weights_2&quot;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal</span><span class="p">(</span>
+      <span class="p">[</span><span class="n">input_size</span><span class="p">,</span> <span class="n">features</span><span class="p">],</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+  <span class="n">biases</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+    <span class="s2">&quot;biases_2&quot;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">features</span><span class="p">]))</span>
+  <span class="n">hidden_layer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span> <span class="o">+</span> <span class="n">biases</span><span class="p">)</span>
+
+  <span class="c1"># Last linear layer for generating an example.</span>
+  <span class="n">output_size</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="n">weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+    <span class="s2">&quot;weights_out&quot;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">truncated_normal</span><span class="p">(</span>
+      <span class="p">[</span><span class="n">features</span><span class="p">,</span> <span class="n">output_size</span><span class="p">],</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+  <span class="n">biases</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span>
+    <span class="s2">&quot;biases_out&quot;</span><span class="p">,</span>
+     <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">output_size</span><span class="p">]))</span>
+  <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">hidden_layer</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span> <span class="o">+</span> <span class="n">biases</span>
+</code></pre></div>
+<p>Let’s look at the training curves:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 16. The probability of classifying a real example as a real example by the discriminator.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_real_2.png" alt="Fig. 16. The probability of classifying a real example as a real example by the discriminator." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 17. The probability of classifying a generated example as a real example by the discriminator.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/p_real_on_fake_2.png" alt="Fig. 17. The probability of classifying a generated example as a real example by the discriminator." width="520"/></td></tr>
+</table> </center></p>
+
+<p>Because of the larger number of parameters the training is much noisier now. Discriminators in all models converge to something around $1/2$ but are quite unstable around it. Let’s look at the generator distribution:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig 18. Distribution of real data. Doesn’t change during training. Training step is displayed on the vertical axis.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/real_data_base_train_3.png" alt="Fig 18. Distribution of real data. Doesn’t change during training. Training step is displayed on the vertical axis." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom"></caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropout_l2_reg_train_3.png" alt="" width="520"/></td></tr>
+</table> </center>
+<center>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_l2_reg_train_3.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_base_train_3.png" width="170"/>
+<img src="/images/posts/2018-04-03-generative-adversarial-networks/fake_data_dropout_train_3.png" width="170"/>
+</center>
+<center>
+Fig 19. Distribution of generated data from four models. Converges to real data distribution. Training step is displayed on the vertical axis.
+</center></p>
+
+<p>Generator distribution doesn’t exactly match the data distribution but it is quite close. The most regularized model is again the best performing one. It learned two modes that match the data distribution modes. The sizes of the learned distribution peaks are also similar to the ones in the data distribution. So, the neural-network based generator was able to learn a multimodal data distribution.</p>
+
+<p>Here’s the training process:</p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 20. Training process visualization with modes close to each other. The static orange curve is the real data distribution density, the green bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/training_3.gif" alt="Fig. 20. Training process visualization with modes close to each other. The static orange curve is the real data distribution density, the green bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real." width="520"/></td></tr>
+</table> </center></p>
+
+<p><center> <table class="image">
+    <caption align="bottom">Fig. 21. Training process visualization with modes far away from each other. The static orange curve is the real data distribution density, the green bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real.</caption>
+    <tr><td><img src="/images/posts/2018-04-03-generative-adversarial-networks/training_4.gif" alt="Fig. 21. Training process visualization with modes far away from each other. The static orange curve is the real data distribution density, the green bell curve is the distribution density of generated samples. The blue curve is the discriminator, i.e. the probability of an example being real." width="520"/></td></tr>
+</table> </center></p>
+
+<p>These two animations show the training process of GANs on data distributions from the previous section. They show that using a sufficiently big generator with many parameters can approximate multimodal distributions, although quite crudely in our case. This confirms that the issues from the previous section are caused by the generator being too simple. Discriminators on these animations are significantly more noisy than in the fitting a normal distribution section, but nevertheless by the end of the training process they start looking like a noisy horizontal line $D(x)=1/2$.</p>
+
+<h2>Conclusion</h2>
+
+<p>GAN &mdash; is a model for approximating an arbitrary distribution by only sampling from that distribution. In this post we learned how this model works on a trivial example of fitting a normal distribution and on a more complex problem of fitting a bimodal distribution using a neural network. Both problems were solved with good accuracy which only required using a sufficiently complex generator model. In the next post we will move from simple test problems to real-world problems of generating samples from complex distributions of images.</p>
+
+<h2>Acknowledgements</h2>
+
+<p>Thanks <a href="https://www.linkedin.com/in/olga-talanova-b319b761/">Olga Talanova</a> and <a href="https://www.linkedin.com/in/ruslan-login-68bb2676/">Ruslan Login</a> for reviewing this post. Thanks <a href="https://www.linkedin.com/in/ruslan-login-68bb2676/">Ruslan Login</a> for helping with images and animations. Thanks <a href="https://github.com/andrewtar">Andrei Tarashkevich</a> for helping with converting it to Jekyll.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="/posts/2018/10/27/go-inject-dependency-injection-library-for-go.html" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/posts/2018/02/05/generative-modeling-and-ai.html" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+    <footer>
+        <span>
+            &copy; <time datetime="2018-10-27 19:30:08 +0000">2018</time> You can find me on <a href="https://github.com/Monnoroch">GitHub</a>.
+        </span>
+    </footer>
+    <script src="/scripts/responsive.js" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']]
+            }
+        });
+    </script>
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</body>
+</html>

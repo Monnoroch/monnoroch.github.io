@@ -3,6 +3,7 @@ layout: post
 title: Probabilistic interpretaton of classical Machine Learning models
 date: '2017-10-31 00:20:00 +0300'
 categories: en posts
+author: Max Strakhov
 ---
 
 With this article I am starting a series covering generative models in machine learning. We will review classical machine learning (ML) problems, look at generative modelling, determine its differences from the classical ML problems, explore existing approaches, and dive into the details of the models based on deep neural networks.

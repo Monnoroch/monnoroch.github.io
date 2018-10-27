@@ -3,6 +3,7 @@ layout: post
 title: Глубокое обучение в гараже — Братство данных
 date: '2016-02-15 13:54:00 +0300'
 categories: ru posts
+author: Max Strakhov
 ---
 
 <center><img src="/images/posts/2016-02-15-deep-learning-in-the-garage-fellowship-of-data/intro_girl.png" width=520 alt="Пример работы системы"/></center>

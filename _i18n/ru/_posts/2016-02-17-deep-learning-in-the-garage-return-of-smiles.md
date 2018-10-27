@@ -3,6 +3,7 @@ layout: post
 title: Глубокое обучение в гараже — Возвращение смайлов
 date: '2016-02-17 17:23:00 +0300'
 categories: ru posts
+author: Max Strakhov
 ---
 
 <center><img src="/images/posts/2016-02-17-deep-learning-in-the-garage-return-of-smiles/intro-girl.png" width=520 alt="Пример работы системы"/></center>

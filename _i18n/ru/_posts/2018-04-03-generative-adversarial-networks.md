@@ -3,6 +3,7 @@ layout: post
 title: Generative adversarial networks
 date: '2018-04-03 12:00:00 +0300'
 categories: ru posts
+author: Max Strakhov
 ---
 В [прошлой статье](/ru/posts/2018/02/05/generative-modeling-and-ai.html) мы рассмотрели порстейшую линейную генеративную модель PPCA. Вторая генеративная модель, которую мы рассмотрим &mdash; Generative Adversarial Networks, сокращенно GAN. В этой статье мы рассмотрим самую базовую версию этой модели, оставив продвинутые версии и сравнение с другими подходами в генеративном моделировании на следующие главы.
 
